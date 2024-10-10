@@ -135,7 +135,59 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Total Responded Report -->
+            <div id="totalRespondedReportBlock" class="bg-white overflow-hidden shadow-md sm:rounded-lg print-header mt-10 hidden">
+                <div class="p-6 text-gray-900 print-header">
+                    <p class="hidden print-show mt-1 mb-1 border-b-2 text-center">
+                        <span class="font-bold text-2xl">Total Responded Cases</span> <br>
+                        Response summary from year <span class="text-red-600 font-bold">2020 to Present</span>
+                    </p>
+                    <h3 class="text-lg font-semibold mb-4">{{ __("Yearly Total Responded Cases") }}</h3>
+                    @if($yearlyAccidents && $yearlyMedicals)
+                    <div class="overflow-x-auto">
+                        <div class="relative max-h-96 2xl:max-h-[30rem] overflow-y-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barangay</th>
+                                        @foreach(range(2020, now()->year) as $year)
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ $year }}</th>
+                                        @endforeach
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                    </tr>
+                                </thead>
+                                <div>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($yearlyResponses as $barangay => $responses)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $barangay }}</td>
+                                            @php $total = 0; @endphp
+                                            @foreach(range(2020, now()->year) as $year)
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                {{ $responses[$year] ?? 0 }}
+                                                @php $total += $responses[$year] ?? 0; @endphp
+                                            </td>
+                                            @endforeach
+                                            <td class="px-6 py-4 font-semibold">{{ $total }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="grid place-items-end">
+                        <button onclick="window.print()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700">
+                            {{ __('Print') }}
+                        </button>
+                    </div>
+                    @else
+                    <p>{{ __("No data found for total responded cases.") }}</p>
+                    @endif
+                </div>
+            </div>
         </div>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -155,8 +207,7 @@
                         type: 'line',
                         data: {
                             labels: years,
-                            datasets: [
-                                {
+                            datasets: [{
                                     label: 'Medical Cases',
                                     data: totalCases,
                                     borderColor: 'rgb(75, 192, 192)',
@@ -188,7 +239,9 @@
                         options: {
                             responsive: true,
                             plugins: {
-                                legend: { display: true }
+                                legend: {
+                                    display: true
+                                }
                             },
                             interaction: {
                                 mode: 'nearest',
@@ -202,15 +255,23 @@
                                 const datasetLabel = chart.data.datasets[activeElements[0].datasetIndex].label;
                                 const medicalReportBlock = document.getElementById('medicalReportBlock');
                                 const accidentReportBlock = document.getElementById('accidentReportBlock');
+                                const totalRespondedReportBlock = document.getElementById('totalRespondedReportBlock');
 
                                 if (datasetLabel === 'Vehicular Accidents') {
                                     medicalReportBlock.classList.add('hidden');
                                     accidentReportBlock.classList.remove('hidden');
-                                } else {
+                                    totalRespondedReportBlock.classList.add('hidden'); // Hide Total Responded
+                                } else if (datasetLabel === 'Medical Cases') {
                                     accidentReportBlock.classList.add('hidden');
                                     medicalReportBlock.classList.remove('hidden');
+                                    totalRespondedReportBlock.classList.add('hidden'); // Hide Total Responded
+                                } else if (datasetLabel === 'Total Responded') {
+                                    medicalReportBlock.classList.add('hidden');
+                                    accidentReportBlock.classList.add('hidden');
+                                    totalRespondedReportBlock.classList.remove('hidden'); // Show Total Responded
                                 }
                             }
+
                         }
                     });
                 })
@@ -218,7 +279,7 @@
         });
     </script>
 
-<style>
+    <style>
         @media print {
 
             nav,

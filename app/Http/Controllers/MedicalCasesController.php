@@ -177,12 +177,10 @@ class MedicalCasesController extends Controller
 
     // Restructure the data to combine causes of incidents and group by year
     $yearlyAccidentsFormatted = [];
-
     foreach ($yearlyAccidents as $barangay => $accidentsByBarangay) {
         $yearlyAccidentsFormatted[$barangay] = [
             'causes_of_incident' => $accidentsByBarangay->pluck('cause_of_incident')->unique()->implode(', '), // Combine causes
         ];
-
         foreach ($accidentsByBarangay as $accident) {
             $yearlyAccidentsFormatted[$barangay][$accident->year] = ($yearlyAccidentsFormatted[$barangay][$accident->year] ?? 0) + $accident->total_accidents;
         }
@@ -202,14 +200,40 @@ class MedicalCasesController extends Controller
 
     // Restructure the data to combine chief complaints and group by year
     $yearlyMedicalsFormatted = [];
-
     foreach ($yearlyMedicals as $barangay => $medicalsByBarangay) {
         $yearlyMedicalsFormatted[$barangay] = [
             'chief_complaints' => $medicalsByBarangay->pluck('chief_complaints')->unique()->implode(', '), // Combine complaints
         ];
-
         foreach ($medicalsByBarangay as $medical) {
             $yearlyMedicalsFormatted[$barangay][$medical->year] = ($yearlyMedicalsFormatted[$barangay][$medical->year] ?? 0) + $medical->total_medicals;
+        }
+    }
+
+    // Initialize the combined response data
+    $yearlyResponses = [];
+    
+    // Combine the yearly accidents and yearly medicals
+    foreach ($yearlyAccidentsFormatted as $barangay => $accidents) {
+        $yearlyResponses[$barangay] = $accidents; // Start with accidents data
+        $yearlyResponses[$barangay]['total'] = 0; // Initialize total
+
+        // Add yearly medicals to the responses
+        if (isset($yearlyMedicalsFormatted[$barangay])) {
+            foreach ($yearlyMedicalsFormatted[$barangay] as $year => $total_medicals) {
+                // Ensure that we are summing integers
+                $yearlyResponses[$barangay][$year] = ($yearlyResponses[$barangay][$year] ?? 0) + (int)$total_medicals; 
+
+                // Update total for the barangay
+                $yearlyResponses[$barangay]['total'] += (int)$total_medicals; // Ensure this is an integer
+            }
+        }
+    }
+
+    // Add remaining medicals for barangays not in accidents
+    foreach ($yearlyMedicalsFormatted as $barangay => $medicals) {
+        if (!isset($yearlyResponses[$barangay])) {
+            $yearlyResponses[$barangay] = $medicals; // Start with medicals data
+            $yearlyResponses[$barangay]['total'] = array_sum(array_map('intval', $medicals)); // Convert to integers for sum
         }
     }
 
@@ -217,8 +241,11 @@ class MedicalCasesController extends Controller
     return view('medical_cases.yearly', [
         'yearlyAccidents' => $yearlyAccidentsFormatted,
         'yearlyMedicals' => $yearlyMedicalsFormatted,
+        'yearlyResponses' => $yearlyResponses, // Pass combined data to the view
     ]);
 }
+
+
 
 
     public function getBarangayCases(Request $request)
