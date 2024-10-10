@@ -176,7 +176,7 @@
                             </table>
                         </div>
                     </div>
-                    <div class="grid place-items-end">
+                    <div class="grid place-items-end pt-5 mt-5 border-t-2 print-hidden">
                         <button onclick="window.print()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700">
                             {{ __('Print') }}
                         </button>
