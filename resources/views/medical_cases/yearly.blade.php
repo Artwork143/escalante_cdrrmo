@@ -86,9 +86,86 @@
                     @endif
                 </div>
             </div>
+            <div class="{{ auth()->user()->role === 0 ? 'flex' : 'hidden' }} print-hidden gap-3 mt-10">
+                <div class="bg-white overflow-hidden w-full shadow-md sm:rounded-lg">
+                    <div class="p-6">
+                        <!-- <h3 class="text-lg font-semibold mb-4 mt-2">{{ __("Line Chart") }}</h3> -->
+                        <!-- Bar Chart Container -->
+                        <canvas id="medicalCasesChart" class="p-6"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
+
+    <!-- Add this script tag to load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/yearly-medicals')
+                .then(response => response.json())
+                .then(data => {
+                    const yearlyMedicals = data.yearlyMedicals;
+
+                    // Extract years, total medical cases, vehicular accidents, and the sum of both
+                    const years = yearlyMedicals.map(item => item.year);
+                    const totalCases = yearlyMedicals.map(item => item.total_medicals);
+                    const vehicularAccidents = yearlyMedicals.map(item => item.vehicular_accidents);
+                    const totalSum = yearlyMedicals.map(item => item.total_sum);
+
+                    // Create the chart with multiple datasets
+                    const ctx = document.getElementById('medicalCasesChart').getContext('2d');
+                    const myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: years, // X-axis labels (years)
+                            datasets: [{
+                                    label: 'Medical Cases',
+                                    data: totalCases, // Y-axis data (total medical cases)
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    fill: false,
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Vehicular Accidents',
+                                    data: vehicularAccidents, // Y-axis data (vehicular accidents)
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    fill: false,
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Total Responded',
+                                    data: totalSum, // Y-axis data (sum of both)
+                                    borderColor: 'rgb(54, 162, 235)',
+                                    fill: false,
+                                    tension: 0.1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: true
+                                },
+                                // title: {
+                                //     display: true,
+                                //     text: 'Total Medical Cases, Vehicular Accidents, and Combined Per Year'
+                                // }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+
+
+        });
+    </script>
+
+
+
     <!-- CSS for print view -->
     <style>
         @media print {

@@ -106,5 +106,7 @@ Route::get('/get-barangay-details/{barangay}', [MedicalCasesController::class, '
 Route::get('/get-barangay-accidents', [VehicularAccidentsController::class, 'getBarangayCases']);
 Route::get('/get-barangay-accidents/{barangay}', [VehicularAccidentsController::class, 'getBarangayDetails']);
 
+Route::get('/yearly-medicals', [MedicalCasesController::class, 'getYearlyMedicals']);
+
 
 require __DIR__ . '/auth.php';

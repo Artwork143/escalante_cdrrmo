@@ -314,7 +314,10 @@ use Carbon\Carbon;
                     const suggestionBox = document.getElementById('suggestionBox');
                     const focusBarangay = document.getElementById('focusBarangay');
                     focusBarangay.innerText = `${highestCaseBarangay} (${highestCaseCount} cases)`;
-                    suggestionBox.classList.remove('hidden');
+
+                    if (highestCaseCount > 1 ) {
+                        suggestionBox.classList.remove('hidden');
+                    }
 
                     // Render the Horizontal Bar Chart
                     const ctxBar = document.getElementById('barangayRankingChart').getContext('2d');

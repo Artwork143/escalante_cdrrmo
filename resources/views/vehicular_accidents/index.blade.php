@@ -313,8 +313,11 @@ use Carbon\Carbon;
                     // Show the suggestion box and display the barangay with the highest cases
                     const suggestionBox = document.getElementById('suggestionBox');
                     const focusBarangay = document.getElementById('focusBarangay');
-                    focusBarangay.innerText = `${highestCaseBarangay} (${highestCaseCount} accident)`;
-                    suggestionBox.classList.remove('hidden');
+                    focusBarangay.innerText = `${highestCaseBarangay} (${highestCaseCount} accidents)`;
+
+                    if (highestCaseCount > 1 ) {
+                        suggestionBox.classList.remove('hidden');
+                    }
 
                     // Render the Horizontal Bar Chart
                     const ctxBar = document.getElementById('barangayRankingChart').getContext('2d');

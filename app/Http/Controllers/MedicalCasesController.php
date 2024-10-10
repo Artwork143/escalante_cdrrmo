@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\MedicalCase;
+use App\Models\VehicularAccident;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -230,5 +231,58 @@ class MedicalCasesController extends Controller
             ->get(['date', 'rescue_team', 'place_of_incident', 'no_of_patients', 'chief_complaints', 'facility_name', 'barangay']);
 
         return response()->json($barangayDetails);
+    }
+
+    public function getYearlyMedicals()
+    {
+        // Fetch total approved medical cases per year
+        $yearlyMedicals = MedicalCase::select(
+            DB::raw('YEAR(date) as year'),
+            DB::raw('COUNT(*) as total_medicals')
+        )
+            ->where('is_approved', 1)
+            ->groupBy('year')
+            ->get();
+
+        // Fetch total vehicular accident cases per year
+        $vehicularAccidents = VehicularAccident::select(
+            DB::raw('YEAR(date) as year'),
+            DB::raw('COUNT(*) as vehicular_accidents')
+        )
+            ->where('is_approved', 1)
+            ->groupBy('year')
+            ->get();
+
+        // Prepare the data for the front end
+        $formattedMedicals = [];
+
+        foreach ($yearlyMedicals as $case) {
+            $year = $case->year;
+            $totalMedicals = $case->total_medicals;
+
+            // Find vehicular accident cases for the same year
+            $vehicularAccident = $vehicularAccidents->firstWhere('year', $year);
+            $accidentsCount = $vehicularAccident ? $vehicularAccident->vehicular_accidents : 0;
+
+            // Calculate the sum of both
+            $sum = $totalMedicals + $accidentsCount;
+
+            // Add data to the array
+            $formattedMedicals[] = [
+                'year' => $year,
+                'total_medicals' => $totalMedicals,
+                'vehicular_accidents' => $accidentsCount,
+                'total_sum' => $sum,
+            ];
+        }
+
+        // Generate a list of years for the front end (optional)
+        $years = range(2020, now()->year);
+
+        // Return the formatted data as a JSON response
+        return response()->json([
+            'yearlyMedicals' => $formattedMedicals,
+            'years' => $years,
+        ]);
     }
 }
