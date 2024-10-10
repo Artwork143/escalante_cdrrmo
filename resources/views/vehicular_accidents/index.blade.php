@@ -8,17 +8,17 @@ use Carbon\Carbon;
         </h2>
 
         <div class="hidden print-show text-center">
-            <div class="flex">
-                <img src="{{ asset('images/escaLogo.jpg') }}" style="width: 17%; max-width: 800px;">
-                <div>
+            <div class="flex items-center justify-center">
+                <img src="{{ asset('images/escaLogo.jpg') }}" class="w-1/5 max-w-sm">
+                <div class="mx-4">
                     <p class="font-bold">
                         REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
                     </p>
-                    <p class=" text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
+                    <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
                     <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
-                    <p class=" text-red-600">09152627121 | 09089376724</p>
+                    <p class="text-red-600">09152627121 | 09089376724</p>
                 </div>
-                <img src="{{ asset('images/logo.png') }}" style="width: 17%; max-width: 800px;">
+                <img src="{{ asset('images/logo.png') }}" class="w-1/5 max-w-sm">
             </div>
         </div>
     </x-slot>
@@ -315,7 +315,7 @@ use Carbon\Carbon;
                     const focusBarangay = document.getElementById('focusBarangay');
                     focusBarangay.innerText = `${highestCaseBarangay} (${highestCaseCount} accidents)`;
 
-                    if (highestCaseCount > 1 ) {
+                    if (highestCaseCount > 1) {
                         suggestionBox.classList.remove('hidden');
                     }
 

@@ -5,21 +5,23 @@
         </h2>
 
         <div class="hidden print-show text-center">
-            <div class="flex">
-                <img src="{{ asset('images/escaLogo.jpg') }}" style="width: 17%; max-width: 800px;">
-                <div>
+            <div class="flex items-center justify-center">
+                <img src="{{ asset('images/escaLogo.jpg') }}" class="w-1/5 max-w-sm">
+                <div class="mx-4">
                     <p class="font-bold">
                         REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
                     </p>
-                    <p class=" text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
+                    <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
                     <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
-                    <p class=" text-red-600">09152627121 | 09089376724</p>
+                    <p class="text-red-600">09152627121 | 09089376724</p>
                 </div>
-                <img src="{{ asset('images/logo.png') }}" style="width: 17%; max-width: 800px;">
+                <img src="{{ asset('images/logo.png') }}" class="w-1/5 max-w-sm">
             </div>
         </div>
 
     </x-slot>
+
+    
 
     <div class="py-12 print-adjust">
         <div class="max-w-7xl mx-auto sm:px-6 xl:px-0 2xl:px-8">
@@ -88,6 +90,80 @@
             </div>
         </div>
     </div>
+
+    <!-- Add this script tag to load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/yearly-medicals')
+                .then(response => response.json())
+                .then(data => {
+                    const yearlyMedicals = data.yearlyMedicals;
+
+                    // Extract years, total medical cases, vehicular accidents, and the sum of both
+                    const years = yearlyMedicals.map(item => item.year);
+                    const totalCases = yearlyMedicals.map(item => item.total_medicals);
+                    const vehicularAccidents = yearlyMedicals.map(item => item.vehicular_accidents);
+                    const totalSum = yearlyMedicals.map(item => item.total_sum);
+
+                    // Create the chart with multiple datasets
+                    const ctx = document.getElementById('medicalCasesChart').getContext('2d');
+                    const myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: years, // X-axis labels (years)
+                            datasets: [{
+                                    label: 'Medical Cases',
+                                    data: totalCases, // Y-axis data (total medical cases)
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    fill: false,
+                                    tension: 0.1,
+                                    pointRadius: 5, // Default circle size
+                                    pointHoverRadius: 8 // Circle size on hover
+                                },
+                                {
+                                    label: 'Vehicular Accidents',
+                                    data: vehicularAccidents, // Y-axis data (vehicular accidents)
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    fill: false,
+                                    tension: 0.1,
+                                    pointRadius: 5, // Default circle size
+                                    pointHoverRadius: 8 // Circle size on hover
+                                },
+                                {
+                                    label: 'Total Responded',
+                                    data: totalSum, // Y-axis data (sum of both)
+                                    borderColor: 'rgb(54, 162, 235)',
+                                    fill: false,
+                                    tension: 0.1,
+                                    pointRadius: 5, // Default circle size
+                                    pointHoverRadius: 8 // Circle size on hover
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: true
+                                }
+                            },
+                            interaction: {
+                                mode: 'nearest', // Show only the nearest dataset when hovering
+                                intersect: false // Ensure it shows only the dataset point being hovered over
+                            },
+                            hover: {
+                                mode: 'nearest', // Hover over the nearest point to trigger tooltip
+                                intersect: false // Only show the tooltip for the point being hovered
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        });
+    </script>
 
     <!-- CSS for print view -->
     <style>

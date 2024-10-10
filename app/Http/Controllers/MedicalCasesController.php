@@ -162,36 +162,64 @@ class MedicalCasesController extends Controller
     }
 
     public function showYearlyReport()
-    {
-        // Fetch accident data grouped by barangay, cause_of_incident, and year
-        $yearlyMedicals = MedicalCase::select(
-            'barangay',
-            'chief_complaints',
-            DB::raw('YEAR(date) as year'),
-            DB::raw('COUNT(*) as total_medicals')
-        )
-            ->where('is_approved', 1)
-            ->groupBy('barangay', 'chief_complaints', 'year')
-            ->get()
-            ->groupBy('barangay');
+{
+    // Fetch vehicular accident data grouped by barangay, cause_of_incident, and year
+    $yearlyAccidents = VehicularAccident::select(
+        'barangay',
+        'cause_of_incident',
+        DB::raw('YEAR(date) as year'),
+        DB::raw('COUNT(*) as total_accidents')
+    )
+        ->where('is_approved', 1)
+        ->groupBy('barangay', 'cause_of_incident', 'year')
+        ->get()
+        ->groupBy('barangay');
 
-        // Restructure the data to combine causes of incidents and group by year
-        $yearlyMedicalsFormatted = [];
+    // Restructure the data to combine causes of incidents and group by year
+    $yearlyAccidentsFormatted = [];
 
-        foreach ($yearlyMedicals as $barangay => $medicalsByBarangay) {
-            $yearlyMedicalsFormatted[$barangay] = [
-                'chief_complaints' => $medicalsByBarangay->pluck('chief_complaints')->unique()->implode(', '), // Combine causes
-            ];
+    foreach ($yearlyAccidents as $barangay => $accidentsByBarangay) {
+        $yearlyAccidentsFormatted[$barangay] = [
+            'causes_of_incident' => $accidentsByBarangay->pluck('cause_of_incident')->unique()->implode(', '), // Combine causes
+        ];
 
-            foreach ($medicalsByBarangay as $medical) {
-                $yearlyMedicalsFormatted[$barangay][$medical->year] = ($yearlyMedicalsFormatted[$barangay][$medical->year] ?? 0) + $medical->total_medicals;
-            }
+        foreach ($accidentsByBarangay as $accident) {
+            $yearlyAccidentsFormatted[$barangay][$accident->year] = ($yearlyAccidentsFormatted[$barangay][$accident->year] ?? 0) + $accident->total_accidents;
         }
-
-        return view('medical_cases.yearly', [
-            'yearlyMedicals' => $yearlyMedicalsFormatted
-        ]);
     }
+
+    // Fetch medical cases data grouped by barangay, chief_complaints, and year
+    $yearlyMedicals = MedicalCase::select(
+        'barangay',
+        'chief_complaints',
+        DB::raw('YEAR(date) as year'),
+        DB::raw('COUNT(*) as total_medicals')
+    )
+        ->where('is_approved', 1)
+        ->groupBy('barangay', 'chief_complaints', 'year')
+        ->get()
+        ->groupBy('barangay');
+
+    // Restructure the data to combine chief complaints and group by year
+    $yearlyMedicalsFormatted = [];
+
+    foreach ($yearlyMedicals as $barangay => $medicalsByBarangay) {
+        $yearlyMedicalsFormatted[$barangay] = [
+            'chief_complaints' => $medicalsByBarangay->pluck('chief_complaints')->unique()->implode(', '), // Combine complaints
+        ];
+
+        foreach ($medicalsByBarangay as $medical) {
+            $yearlyMedicalsFormatted[$barangay][$medical->year] = ($yearlyMedicalsFormatted[$barangay][$medical->year] ?? 0) + $medical->total_medicals;
+        }
+    }
+
+    // Pass both variables to the view
+    return view('medical_cases.yearly', [
+        'yearlyAccidents' => $yearlyAccidentsFormatted,
+        'yearlyMedicals' => $yearlyMedicalsFormatted,
+    ]);
+}
+
 
     public function getBarangayCases(Request $request)
     {
