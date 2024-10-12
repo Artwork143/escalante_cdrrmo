@@ -5,7 +5,7 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ url('/dashboard') }}" class="flex items-center">
+                    <a href="{{ url('/') }}" class="flex items-center">
                         <!-- Logo Image -->
                         <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto" />
                         
@@ -48,31 +48,14 @@
                     </x-dropdown>
 
                 </div>
-
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex pt-4">
-                    <x-dropdown align="left" width="48">
-                        <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 {{ request()->routeIs('medical_cases.yearly') || request()->routeIs('vehicular_accidents.yearly') ? 'border-b-indigo-400 border-b-2 hover:border-b-indigo-400' : 'hover:border-b-2 border-b-0 border-b-gray-100' }} border border-transparent text-sm leading-4 font-medium pb-[23px] text-gray-500 bg-white hover:border-b-gray-300 hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                                <span>{{ __('Yearly Reports') }}</span>
-                                <div class="ms-1">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </button>
-                        </x-slot>
-
-                        <x-slot name="content">
-                            <x-dropdown-link :href="route('medical_cases.yearly')">
-                                {{ __('Medical Cases') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('vehicular_accidents.yearly')">
-                                {{ __('Vehicular Accidents') }}
-                            </x-dropdown-link>
-                        </x-slot>
-                    </x-dropdown>
-
+                
+                @if (Auth::user()->role == 0)
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('medical_cases.yearly')" :active="request()->routeIs('medical_cases.yearly')">
+                        {{ __('Yearly Reports') }}
+                    </x-nav-link>
                 </div>
+                @endif
 
                 <!-- Conditional Navigation for Admin (Users Management) -->
                 @if (Auth::user()->role == 0)

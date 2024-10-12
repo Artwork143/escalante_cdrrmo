@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 //     return view('welcome');
 // });
 
-Route::get('/dashboard', function () {
+Route::get('/', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified', 'rolemanager:user'])->name('dashboard');
 
@@ -36,13 +36,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/medical_cases', [MedicalCasesController::class, 'index'])->name('medical_cases.index');
     Route::get('/medical_cases/create', [MedicalCasesController::class, 'create'])->name('medical_cases.create');
     Route::post('/medical_cases', [MedicalCasesController::class, 'store'])->name('medical_cases.store');
-    Route::get('/yearly-medical-cases', [MedicalCasesController::class, 'showYearlyReport'])->name('medical_cases.yearly');
 
     // Vehicular accidents for all users (create and view only)
     Route::get('/vehicular_accidents', [VehicularAccidentsController::class, 'index'])->name('vehicular_accidents.index');
     Route::get('/vehicular_accidents/create', [VehicularAccidentsController::class, 'create'])->name('vehicular_accidents.create');
     Route::post('/vehicular_accidents', [VehicularAccidentsController::class, 'store'])->name('vehicular_accidents.store');
-    Route::get('/yearly-vehicular-accidents', [VehicularAccidentsController::class, 'showYearlyReport'])->name('vehicular_accidents.yearly');
+    // Route::get('/yearly-vehicular-accidents', [VehicularAccidentsController::class, 'showYearlyReport'])->name('vehicular_accidents.yearly');
 
     // Combined API route for getting accidents and medical cases by barangay
     Route::get('/api/cases', function (Request $request) {
@@ -91,6 +90,7 @@ Route::middleware(['auth', 'rolemanager:admin'])->group(function () {
     Route::put('/medical_cases/{medicalCase}', [MedicalCasesController::class, 'update'])->name('medical_cases.update');
     Route::delete('/medical_cases/{medicalCase}', [MedicalCasesController::class, 'destroy'])->name('medical_cases.destroy');
     Route::patch('/medical_cases/{medicalCase}/approve', [MedicalCasesController::class, 'approve'])->name('medical_cases.approve');
+    Route::get('/yearly-reports', [MedicalCasesController::class, 'showYearlyReport'])->name('medical_cases.yearly');
 
     // Vehicular accidents admin-only actions
     Route::get('/vehicular_accidents/{vehicularAccident}/edit', [VehicularAccidentsController::class, 'edit'])->name('vehicular_accidents.edit');
