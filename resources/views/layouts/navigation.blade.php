@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="bg-[#EB8317] border-b-4 border-[#024CAA]">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -8,9 +8,9 @@
                     <a href="{{ url('/') }}" class="flex items-center">
                         <!-- Logo Image -->
                         <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto" />
-                        
+
                         <!-- Name next to logo -->
-                        <span class="ml-3 text-xl font-semibold text-gray-800">
+                        <span class="ml-3 text-xl font-semibold text-white">
                             {{ config('app.name', 'Your App Name') }}
                         </span>
                     </a>
@@ -24,31 +24,36 @@
                 </div>
 
                 <!-- Generate Reports Dropdown -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex pt-4">
-                    <x-dropdown align="left" width="48">
-                        <x-slot name="trigger">
-                            <button class="inline-flex items-center px-3 py-2 {{ request()->routeIs('medical_cases.index') || request()->routeIs('vehicular_accidents.index') ? 'border-b-indigo-400 border-b-2 hover:border-b-indigo-400' : 'hover:border-b-2 border-b-0 border-b-gray-100' }} border border-transparent text-sm leading-4 font-medium pb-[23px] text-gray-500 bg-white hover:border-b-gray-300 hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                                <span>{{ __('Generate Reports') }}</span>
-                                <div class="ms-1">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </button>
-                        </x-slot>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex pt-[21px]">
+                    <div x-data="{ open: false }" class="relative">
+                        <x-nav-link
+                            href="#"
+                            @click.prevent="open = !open"
+                            :active="request()->routeIs('medical_cases.index') || request()->routeIs('vehicular_accidents.index')"
+                            class="cursor-pointer pb-5">
+                            {{ __('Generate Reports') }}
+                            <div class="inline-flex items-center ms-1">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </x-nav-link>
 
-                        <x-slot name="content">
-                            <x-dropdown-link :href="route('medical_cases.index')">
-                                {{ __('Medical Cases') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('vehicular_accidents.index')">
-                                {{ __('Vehicular Accidents') }}
-                            </x-dropdown-link>
-                        </x-slot>
-                    </x-dropdown>
-
+                        <!-- Dropdown Content -->
+                        <div x-show="open" @click.outside="open = false" class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                            <div class="py-1">
+                                <x-dropdown-link :href="route('medical_cases.index')">
+                                    {{ __('Medical Cases') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('vehicular_accidents.index')">
+                                    {{ __('Vehicular Accidents') }}
+                                </x-dropdown-link>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
+
+
                 @if (Auth::user()->role == 0)
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('medical_cases.yearly')" :active="request()->routeIs('medical_cases.yearly')">
@@ -68,38 +73,42 @@
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6 pt-4">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                    <button class="inline-flex items-center px-3 py-2 {{ request()->routeIs('profile.edit') ? 'border-b-indigo-400 border-b-2 hover:border-b-indigo-400' : 'hover:border-b-2 border-b-0 border-b-gray-100' }} border border-transparent text-sm leading-4 font-medium pb-[23px] text-gray-500 bg-white hover:border-b-gray-300 hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+            <div class="hidden sm:flex sm:items-center sm:ms-6 pt-[21px]">
+                <div x-data="{ open: false }" class="relative">
+                    <x-nav-link
+                        href="#"
+                        @click.prevent="open = !open"
+                        :active="request()->routeIs('profile.edit')"
+                        class="cursor-pointer pb-5">
+                        {{ Auth::user()->name }}
+                        <div class="inline-flex items-center ms-1">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </x-nav-link>
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
-
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                    <!-- Dropdown Content -->
+                    <div x-show="open" @click.outside="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                        <div class="py-1">
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profile') }}
                             </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
+
+                            <!-- Authentication -->
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <x-dropdown-link :href="route('logout')"
+                                    onclick="event.preventDefault();
+                                    this.closest('form').submit();">
+                                    {{ __('Log Out') }}
+                                </x-dropdown-link>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
+
 
             <!-- Hamburger for Responsive Navigation -->
             <div class="-me-2 flex items-center sm:hidden">
