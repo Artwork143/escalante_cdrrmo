@@ -284,20 +284,26 @@ use Carbon\Carbon;
                                             // Insert new rows into the table
                                             barangayData.forEach(caseItem => {
                                                 const row = `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
-                                <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
-                                <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
-                            </tr>
-                        `;
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
+                        <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
+                        <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
+                    </tr>
+                `;
                                                 tableBody.insertAdjacentHTML('beforeend', row);
+                                            });
+
+                                            // Scroll to footer
+                                            document.getElementById('pageFooter').scrollIntoView({
+                                                behavior: 'smooth'
                                             });
                                         });
                                 }
                             }
+
                         }
                     });
 
@@ -363,16 +369,21 @@ use Carbon\Carbon;
                                             // Insert new rows into the table
                                             barangayData.forEach(caseItem => {
                                                 const row = `
-                                                <tr>
-                                                    <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
-                                                    <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
-                                                    <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
-                                                </tr>
-                                            `;
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
+                        <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
+                        <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
+                    </tr>
+                `;
                                                 tableBody.insertAdjacentHTML('beforeend', row);
+                                            });
+
+                                            // Scroll to footer
+                                            document.getElementById('pageFooter').scrollIntoView({
+                                                behavior: 'smooth'
                                             });
                                         });
                                 }

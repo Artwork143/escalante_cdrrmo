@@ -1,4 +1,4 @@
-<footer class="bg-[#EB8317] text-white py-4 {{request()->routeIs('admin') ? 'hidden' : '' }}">
+<footer id="pageFooter" class="bg-[#EB8317] text-white py-4 {{request()->routeIs('admin') ? 'hidden' : '' }}">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="container items-center flex justify-between">
         <!-- Footer Left Section (All Rights Reserved) -->

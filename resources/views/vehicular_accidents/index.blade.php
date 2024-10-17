@@ -295,6 +295,10 @@ use Carbon\Carbon;
                                             `;
                                                 tableBody.insertAdjacentHTML('beforeend', row);
                                             });
+                                            // Scroll to footer
+                                            document.getElementById('pageFooter').scrollIntoView({
+                                                behavior: 'smooth'
+                                            });
                                         });
                                 }
                             }
@@ -374,6 +378,10 @@ use Carbon\Carbon;
                                                 </tr>
                                             `;
                                                 tableBody.insertAdjacentHTML('beforeend', row);
+                                            });
+                                            // Scroll to footer
+                                            document.getElementById('pageFooter').scrollIntoView({
+                                                behavior: 'smooth'
                                             });
                                         });
                                 }

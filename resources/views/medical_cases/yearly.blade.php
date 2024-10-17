@@ -257,21 +257,33 @@
                                 const accidentReportBlock = document.getElementById('accidentReportBlock');
                                 const totalRespondedReportBlock = document.getElementById('totalRespondedReportBlock');
 
+                                // Hide/Show blocks based on dataset
                                 if (datasetLabel === 'Vehicular Accidents') {
                                     medicalReportBlock.classList.add('hidden');
                                     accidentReportBlock.classList.remove('hidden');
-                                    totalRespondedReportBlock.classList.add('hidden'); // Hide Total Responded
+                                    totalRespondedReportBlock.classList.add('hidden');
+                                    accidentReportBlock.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    }); // Scroll to Vehicular Accidents
                                 } else if (datasetLabel === 'Medical Cases') {
                                     accidentReportBlock.classList.add('hidden');
                                     medicalReportBlock.classList.remove('hidden');
-                                    totalRespondedReportBlock.classList.add('hidden'); // Hide Total Responded
+                                    totalRespondedReportBlock.classList.add('hidden');
+                                    medicalReportBlock.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    }); // Scroll to Medical Cases
                                 } else if (datasetLabel === 'Total Responded') {
                                     medicalReportBlock.classList.add('hidden');
                                     accidentReportBlock.classList.add('hidden');
-                                    totalRespondedReportBlock.classList.remove('hidden'); // Show Total Responded
+                                    totalRespondedReportBlock.classList.remove('hidden');
+                                    totalRespondedReportBlock.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    }); // Scroll to Total Responded
                                 }
                             }
-
                         }
                     });
                 })

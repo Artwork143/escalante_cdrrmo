@@ -99,8 +99,8 @@ use Carbon\Carbon;
             // Add GeoJSON layer to the map with hover and click interactions
             var polygonLayer = L.geoJSON(geojson, {
                 style: {
-                    color: 'blue',
-                    fillColor: '#f03',
+                    color: '#024CAA',
+                    fillColor: '#347928',
                     fillOpacity: 0.5
                 },
                 onEachFeature: function(feature, layer) {
