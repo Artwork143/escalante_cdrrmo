@@ -8,14 +8,14 @@ use Carbon\Carbon;
         </h2>
     </x-slot>
 
-    <div class="py-12 flex">
+    <div class="py-12 flex justify-center items-center">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 flex-grow">
-            <div class="bg-white overflow-hidden shadow-md sm:rounded-lg">
+            <div class="bg-gray-50 shadow-lg rounded-lg overflow-hidden">
                 <div class="p-2 text-gray-900">
                     <div id="map" style="width: 100%; height: 500px;">
-                        <div class="sm:rounded-lg p-4 ml-1" style="width: 400px;">
-                            <h3 class="font-semibold text-xl">Total Cases for {{ Carbon::now()->format('F') }} of Brgy. </h3>
-                            <div id="accident-info" class="text-lg">Click on a barangay to see details...</div>
+                        <div class="bg-white shadow-md rounded-lg p-6 absolute top-4 left-4 z-10" style="max-width: 400px;">
+                            <h3 class="font-semibold text-xl text-gray-800">Total Cases for {{ Carbon::now()->format('F') }} of Brgy.</h3>
+                            <div id="accident-info" class="text-lg text-gray-700 mt-2">Click on a barangay to see details...</div>
                         </div>
                     </div>
                 </div>
@@ -26,43 +26,63 @@ use Carbon\Carbon;
     <!-- Emergency Hotline Table -->
     <div class="pb-12 flex">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 flex-grow">
-            <div class="bg-white overflow-hidden shadow-md sm:rounded-lg">
+            <div class="bg-white shadow-md sm:rounded-lg">
+                <!-- Title with color background -->
+                <div class="bg-green-700 text-white p-4 sm:rounded-t-lg">
+                    <h3 class="font-bold text-2xl">
+                        Emergency Hotline Numbers
+                    </h3>
+                </div>
+
                 <div class="p-6 text-gray-900">
-                    <h3 class="font-semibold text-xl">Emergency Hotline Numbers</h3>
-                    <table class="w-full table-auto border-collapse border border-gray-300 mt-4">
+                    <table class="w-full table-auto border-collapse shadow-sm border border-gray-200 rounded-lg overflow-hidden">
                         <thead>
-                            <tr class="bg-gray-200">
+                            <tr class="bg-gray-600 text-white">
                                 <th class="border border-gray-300 px-4 py-2">Service</th>
                                 <th class="border border-gray-300 px-4 py-2">Hotline Number</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="border border-gray-300 px-4 py-2">CDRRMO</td>
+                            <tr class="bg-gray-50 hover:bg-gray-100 transition ease-in-out">
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <i class="fas fa-ambulance text-gray-600 mr-2"></i> CDRRMO
+                                </td>
                                 <td class="border border-gray-300 px-4 py-2">09058400958</td>
                             </tr>
-                            <tr>
-                                <td class="border border-gray-300 px-4 py-2">KABALIKAT</td>
+                            <tr class="bg-white hover:bg-gray-100 transition ease-in-out">
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <i class="fas fa-hands-helping text-gray-600 mr-2"></i> KABALIKAT
+                                </td>
                                 <td class="border border-gray-300 px-4 py-2">09292803024 | 09173799598</td>
                             </tr>
-                            <tr>
-                                <td class="border border-gray-300 px-4 py-2">PNP</td>
+                            <tr class="bg-gray-50 hover:bg-gray-100 transition ease-in-out">
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <i class="fas fa-shield-alt text-gray-600 mr-2"></i> PNP
+                                </td>
                                 <td class="border border-gray-300 px-4 py-2">09985987421</td>
                             </tr>
-                            <tr>
-                                <td class="border border-gray-300 px-4 py-2">BFP</td>
+                            <tr class="bg-white hover:bg-gray-100 transition ease-in-out">
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <i class="fas fa-fire-extinguisher text-gray-600 mr-2"></i> BFP
+                                </td>
                                 <td class="border border-gray-300 px-4 py-2">09216803965</td>
                             </tr>
-                            <tr>
-                                <td class="border border-gray-300 px-4 py-2">NONECO</td>
+                            <tr class="bg-gray-50 hover:bg-gray-100 transition ease-in-out">
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <i class="fas fa-bolt text-gray-600 mr-2"></i> NONECO
+                                </td>
                                 <td class="border border-gray-300 px-4 py-2">09178729032</td>
                             </tr>
-                            <tr>
-                                <td class="border border-gray-300 px-4 py-2">COASTGUARD</td>
+                            <tr class="bg-white hover:bg-gray-100 transition ease-in-out">
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <i class="fas fa-anchor text-gray-600 mr-2"></i> COASTGUARD
+                                </td>
                                 <td class="border border-gray-300 px-4 py-2">09178428359</td>
                             </tr>
-                            <tr>
-                                <td class="border border-gray-300 px-4 py-2">LOCAL RADIO FREQUENCY</td>
+                            <tr class="bg-gray-50 hover:bg-gray-100 transition ease-in-out">
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <i class="fas fa-broadcast-tower text-gray-600 mr-2"></i> LOCAL RADIO FREQUENCY
+                                </td>
                                 <td class="border border-gray-300 px-4 py-2">145.400 Callsign: Opcen Base</td>
                             </tr>
                         </tbody>
@@ -71,6 +91,7 @@ use Carbon\Carbon;
             </div>
         </div>
     </div>
+
 </x-app-layout>
 
 <script>
@@ -134,7 +155,7 @@ use Carbon\Carbon;
                             if (selectedLayer) {
                                 selectedLayer.setStyle({
                                     color: 'blue',
-                                    fillColor: '#f03',
+                                    fillColor: '#347928',
                                     fillOpacity: 0.5
                                 });
                             }

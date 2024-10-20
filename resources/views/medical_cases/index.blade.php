@@ -26,7 +26,47 @@ use Carbon\Carbon;
 
     <div class="py-12 print-adjust">
         <div class="{{ auth()->user()->role === 0 ? 'xl:max-w-[90rem]' : 'max-w-7xl' }} mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-md sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-md sm:rounded-lg mb-1">
+                <div class="p-5 bg-[#295F98] print-hidden">
+                    <!-- Button to create new medical case -->
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-white">{{ __("List of Medical Cases") }}</h3>
+
+                        <!-- Create button visible to both admins and non-admins -->
+                        <a href="{{ route('medical_cases.create') }}" class="px-5 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
+                            {{ __('Create New Case') }}
+                        </a>
+                    </div>
+
+                    <!-- Filter by Month and Year -->
+                    <form method="GET" action="{{ route('medical_cases.index') }}" class="mb-4">
+                        <label for="month" class="block text-sm font-medium text-white mb-1">{{ __("Filter by Date") }}</label>
+                        <div class="flex space-x-4">
+                            <select name="month" id="month" class="w-40 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">{{ __("Select Month") }}</option>
+                                @foreach($months as $key => $month)
+                                <option value="{{ $key + 1 }}" {{ request('month') == ($key + 1) ? 'selected' : '' }}>
+                                    {{ $month }}
+                                </option>
+                                @endforeach
+                            </select>
+
+                            <select name="year" id="year" class="w-40 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">{{ __("Select Year") }}</option>
+                                @for ($i = date('Y'); $i >= 2000; $i--)
+                                <option value="{{ $i }}" {{ request('year') == $i ? 'selected' : '' }}>
+                                    {{ $i }}
+                                </option>
+                                @endfor
+                            </select>
+
+                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
+                                {{ __('Filter') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="p-6 text-gray-900 print-header">
 
                     @if(request('month'))
@@ -35,42 +75,7 @@ use Carbon\Carbon;
                     </p>
                     @endif
 
-                    <!-- Button to create new medical case -->
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">{{ __("List of Medical Cases") }}</h3>
 
-                        <!-- Create button visible to both admins and non-admins -->
-                        <a href="{{ route('medical_cases.create') }}" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700">
-                            {{ __('Create New Case') }}
-                        </a>
-                    </div>
-
-                    <!-- Filter by Month and Year -->
-                    <form method="GET" action="{{ route('medical_cases.index') }}" class="mb-4">
-                        <label for="month" class="block text-sm font-medium text-gray-700">{{ __("Filter by Date") }}</label>
-                        <select name="month" id="month" class="mt-1 w-36 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none">
-                            <option value="">{{ __("Select Month") }}</option>
-                            @foreach($months as $key => $month)
-                            <option value="{{ $key + 1 }}" {{ request('month') == ($key + 1) ? 'selected' : '' }}>
-                                {{ $month }}
-                            </option>
-                            @endforeach
-                        </select>
-
-                        <!-- <label for="year" class=" text-sm font-medium text-gray-700 mt-2">{{ __("Filter by Year") }}</label> -->
-                        <select name="year" id="year" class="mt-1 w-36 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none">
-                            <option value="">{{ __("Select Year") }}</option>
-                            @for ($i = date('Y'); $i >= 2000; $i--)
-                            <option value="{{ $i }}" {{ request('year') == $i ? 'selected' : '' }}>
-                                {{ $i }}
-                            </option>
-                            @endfor
-                        </select>
-
-                        <button type="submit" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700">
-                            {{ __('Filter') }}
-                        </button>
-                    </form>
 
 
                     @if ($medicalCases->count() > 0)
