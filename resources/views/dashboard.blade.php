@@ -28,7 +28,7 @@ use Carbon\Carbon;
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 flex-grow">
             <div class="bg-white shadow-md sm:rounded-lg">
                 <!-- Title with color background -->
-                <div class="bg-green-700 text-white p-4 sm:rounded-t-lg">
+                <div class="bg-[#295F98] text-white p-4 sm:rounded-t-lg">
                     <h3 class="font-bold text-2xl">
                         Emergency Hotline Numbers
                     </h3>

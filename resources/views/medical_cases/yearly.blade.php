@@ -56,7 +56,7 @@
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @foreach($yearlyMedicals as $barangay => $cases)
-                                    <tr>
+                                    <tr class="odd:bg-white even:bg-gray-100 hover:bg-gray-200">
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $barangay }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">{{ $cases['chief_complaints'] }}</td>
                                         @php $total = 0; @endphp
@@ -108,7 +108,7 @@
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @foreach($yearlyAccidents as $barangay => $accidents)
-                                    <tr>
+                                    <tr class="odd:bg-white even:bg-gray-100 hover:bg-gray-200">
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $barangay }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-wrap">{{ $accidents['causes_of_incident'] }}</td>
                                         @php $total = 0; @endphp
@@ -125,7 +125,7 @@
                             </table>
                         </div>
                     </div>
-                    <div class="grid place-items-end">
+                    <div class="grid place-items-end pt-5 mt-5 border-t-2 print-hidden">
                         <button onclick="window.print()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700">
                             {{ __('Print') }}
                         </button>
@@ -160,7 +160,7 @@
                                 <div>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         @foreach($yearlyResponses as $barangay => $responses)
-                                        <tr>
+                                        <tr class="odd:bg-white even:bg-gray-100 hover:bg-gray-200">
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $barangay }}</td>
                                             @php $total = 0; @endphp
                                             @foreach(range(2020, now()->year) as $year)

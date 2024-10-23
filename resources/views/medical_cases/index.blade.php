@@ -106,7 +106,7 @@ use Carbon\Carbon;
                                     @endphp
 
                                     @foreach ($sortedCases as $case)
-                                    <tr class="{{ $case->is_approved ? '' : 'bg-yellow-100' }} {{ $case->is_approved ? '' : 'print-hidden' }}">
+                                    <tr class="{{ $case->is_approved ? 'even:bg-gray-50 odd:bg-white hover:bg-gray-200' : 'bg-yellow-100' }} {{ $case->is_approved ? '' : 'print-hidden' }}">
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $loop->iteration }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($case->date)->format('m/d/Y') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $case->rescue_team }}</td>
@@ -289,7 +289,7 @@ use Carbon\Carbon;
                                             // Insert new rows into the table
                                             barangayData.forEach(caseItem => {
                                                 const row = `
-                    <tr>
+                    <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
                         <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
                         <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
                         <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
@@ -374,7 +374,7 @@ use Carbon\Carbon;
                                             // Insert new rows into the table
                                             barangayData.forEach(caseItem => {
                                                 const row = `
-                    <tr>
+                    <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
                         <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
                         <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
                         <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
