@@ -24,7 +24,7 @@
                 </div>
 
                 <!-- Generate Reports Dropdown -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex pt-[21px]">
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex pt-[21px] z-10">
                     <div x-data="{ open: false }" class="relative">
                         <x-nav-link
                             href="#"

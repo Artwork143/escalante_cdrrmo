@@ -21,11 +21,12 @@ use Carbon\Carbon;
                 <img src="{{ asset('images/logo.png') }}" class="w-1/5 max-w-sm">
             </div>
         </div>
-
     </x-slot>
 
-    <div class="py-12 print-adjust">
-        <div class="{{ auth()->user()->role === 0 ? 'xl:max-w-[90rem]' : 'max-w-7xl' }} mx-auto sm:px-6 lg:px-8">
+    <div class="pb-12 print-adjust">
+        <div class="{{ auth()->user()->role === 0 ? 'xl:max-w-[90rem]' : 'max-w-7xl' }} mx-auto sm:px-6 lg:px-8 relative">
+            <div id="ambulance-animation" style="width: 100px; height: 50px; position: relative; top: 0px; left: 0px; transition: transform 1s ease;" class="print-hidden z-0"></div>
+            <div id="patient-animation" style="width: 100px; height: 70px; position: absolute; top: 0px; left: 1200px; display: none; transition: transform 1s ease;" class="pb-2 print-hidden"></div>
             <div class="bg-white overflow-hidden shadow-md sm:rounded-lg mb-1">
                 <div class="p-5 bg-[#295F98] print-hidden">
                     <!-- Button to create new medical case -->
@@ -33,7 +34,7 @@ use Carbon\Carbon;
                         <h3 class="text-xl font-semibold text-white">{{ __("List of Medical Cases") }}</h3>
 
                         <!-- Create button visible to both admins and non-admins -->
-                        <a href="{{ route('medical_cases.create') }}" class="px-5 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
+                        <a href="{{ route('medical_cases.create') }}" id="create-button" class="px-5 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
                             {{ __('Create New Case') }}
                         </a>
                     </div>
@@ -222,6 +223,54 @@ use Carbon\Carbon;
 
         </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.6/lottie.min.js"></script>
+    <script>
+        // Load the Lottie animation with autoplay set to false
+        var animation = lottie.loadAnimation({
+            container: document.getElementById('ambulance-animation'), // The container element
+            renderer: 'svg', // Render as SVG
+            loop: true, // Loop the animation
+            autoplay: false, // Do not autoplay initially
+            path: '{{ asset("ambulance.json") }}' // Path to the JSON animation file
+        });
+
+        var patient = lottie.loadAnimation({
+            container: document.getElementById('patient-animation'), // The container element
+            renderer: 'svg', // Render as SVG
+            loop: true, // Loop the animation
+            autoplay: false, // Do not autoplay initially
+            path: '{{ asset("patient.json") }}' // Path to the JSON animation file
+        });
+
+        // Target position where the ambulance should move on hover
+        const targetPositionX = 1100; // Adjust based on your layout
+
+        // Get the "Create New Case" button
+        var createButton = document.getElementById('create-button');
+        var ambulanceAnimation = document.getElementById('ambulance-animation');
+        var patientDiv = document.getElementById('patient-animation');
+
+        // Start animation and move right on button hover
+        createButton.addEventListener('mouseenter', function() {
+            animation.play();
+            ambulanceAnimation.style.transform = `translateX(${targetPositionX}px)`; // Move to the target position
+
+            // Show and play patient animation
+            patientDiv.style.display = 'block'; // Make patient animation visible
+            patient.play();
+        });
+
+        // Stop animation and reset position when hover is removed
+        createButton.addEventListener('mouseleave', function() {
+            animation.stop();
+            ambulanceAnimation.style.transform = 'translateX(0)'; // Move back to the original position
+
+            // Hide and stop patient animation
+            patientDiv.style.display = 'none'; // Hide patient animation
+            patient.stop();
+        });
+    </script>
 
     <!-- Chart.js script and pie chart logic -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
