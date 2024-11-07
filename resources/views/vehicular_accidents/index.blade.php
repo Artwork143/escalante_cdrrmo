@@ -23,10 +23,8 @@ use Carbon\Carbon;
         </div>
     </x-slot>
 
-    <div class="pb-12 print-adjust">
-        <div class="{{ auth()->user()->role === 0 ? 'xl:max-w-[90rem]' : 'max-w-7xl' }} mx-auto sm:px-6 xl:px-0 2xl:px-8 relative">
-            <div id="ambulance-animation" style="width: 100px; height: 50px; position: relative; top: 0px; left: 0px; transition: transform 1s ease;" class="print-hidden z-0"></div>
-            <div id="cars-animation" style=" position: absolute; top: 0px; left: 1220px; display: none; transition: transform 1s ease;" class="print-hidden"><img src="/images/car.png" alt="Icon" style="width: 50px; height: 50px;"></div>
+    <div class="py-12 print-adjust">
+        <div class="{{ auth()->user()->role === 0 ? 'xl:max-w-[90rem]' : 'max-w-7xl' }} mx-auto sm:px-6 xl:px-0 2xl:px-8">
             <div class="bg-white overflow-hidden shadow-md sm:rounded-lg">
                 <div class="p-5 bg-[#295F98] print-hidden">
                     <!-- Button to create new medical case -->
@@ -219,54 +217,6 @@ use Carbon\Carbon;
 
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.6/lottie.min.js"></script>
-    <script>
-        // Load the Lottie animation with autoplay set to false
-        var animation = lottie.loadAnimation({
-            container: document.getElementById('ambulance-animation'), // The container element
-            renderer: 'svg', // Render as SVG
-            loop: true, // Loop the animation
-            autoplay: false, // Do not autoplay initially
-            path: '{{ asset("ambulance.json") }}' // Path to the JSON animation file
-        });
-
-        var cars = lottie.loadAnimation({
-            container: document.getElementById('cars-animation'), // The container element
-            renderer: 'svg', // Render as SVG
-            loop: true, // Loop the animation
-            autoplay: false, // Do not autoplay initially
-            
-        });
-
-        // Target position where the ambulance should move on hover
-        const targetPositionX = 1100; // Adjust based on your layout
-
-        // Get the "Create New Case" button
-        var createButton = document.getElementById('create-button');
-        var ambulanceAnimation = document.getElementById('ambulance-animation');
-        var carsDiv = document.getElementById('cars-animation');
-
-        // Start animation and move right on button hover
-        createButton.addEventListener('mouseenter', function() {
-            animation.play();
-            ambulanceAnimation.style.transform = `translateX(${targetPositionX}px)`; // Move to the target position
-
-            // Show and play cars animation
-            carsDiv.style.display = 'block'; // Make cars animation visible
-            cars.play();
-        });
-
-        // Stop animation and reset position when hover is removed
-        createButton.addEventListener('mouseleave', function() {
-            animation.stop();
-            ambulanceAnimation.style.transform = 'translateX(0)'; // Move back to the original position
-
-            // Hide and stop cars animation
-            carsDiv.style.display = 'none'; // Hide cars animation
-            cars.stop();
-        });
-    </script>
 
     <!-- Chart.js script and pie chart logic -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
