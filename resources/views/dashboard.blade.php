@@ -15,7 +15,7 @@ use Carbon\Carbon;
                     <div class="p-2 text-gray-900">
                         <div id="map" style="width: 100%; height: 500px;">
                             <div class="bg-white shadow-md rounded-lg p-6 absolute top-4 left-4 z-10" style="max-width: 400px;">
-                                <h3 class="font-semibold text-xl text-gray-800">Total Cases for {{ Carbon::now()->format('F') }} of Brgy.</h3>
+                                <h3 class="font-semibold text-xl text-gray-800">{{ Carbon::now()->format('F') }} Cases per Barangay</h3>
                                 <div id="accident-info" class="text-lg text-gray-700 mt-2">Click on a barangay to see details...</div>
                             </div>
                         </div>
@@ -158,13 +158,17 @@ use Carbon\Carbon;
                                     const medicalCases = data.medicals_count || 0;
                                     const punongBarangay = data.punong_barangay || 'Unknown';
                                     const contactNumber = data.contact_number || 'N/A';
+                                    const alpha = data.alpha_count || 0;
+                                    const bravo = data.bravo_count || 0;
+                                    const charlie = data.charlie_count || 0;
 
                                     // Prepare modal content
                                     const details = `
                                     Vehicular Accidents: ${accidents}<br>
                                     Medical Cases: ${medicalCases}<br>
                                     Punong Barangay: ${punongBarangay}<br>
-                                    Contact Number: ${contactNumber}
+                                    Contact Number: ${contactNumber}<br>
+                                    Alpha: ${alpha} | Bravo: ${bravo} | Charlie: ${charlie}
                                 `;
 
                                     // Open modal with data
@@ -213,23 +217,11 @@ use Carbon\Carbon;
         filter: blur(5px);
     }
 
-    /* Disable pointer events on the main page content when blurred */
-    #pageContent.blur {
-        pointer-events: none;
-        /* Disables clicks and hovers on the content */
-    }
-
     /* Modal overlay */
     #barangayModal {
         display: flex;
         align-items: center;
         justify-content: center;
-        pointer-events: none;
-        /* Disable clicks on the overlay */
     }
 
-    #barangayModal .bg-white {
-        pointer-events: auto;
-        /* Enable clicking inside the modal */
-    }
 </style>

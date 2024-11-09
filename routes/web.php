@@ -63,6 +63,24 @@ Route::middleware('auth')->group(function () {
             ->whereMonth('date', $month)
             ->count();
 
+        $alphaCount = MedicalCase::where('rescue_team', 'Alpha')
+            ->where('is_approved', 1)
+            ->where('barangay', $barangay)
+            ->whereMonth('date', $month)
+            ->count();
+
+        $bravoCount = MedicalCase::where('rescue_team', 'Bravo')
+            ->where('is_approved', 1)
+            ->where('barangay', $barangay)
+            ->whereMonth('date', $month)
+            ->count();
+
+        $charlieCount = MedicalCase::where('rescue_team', 'Charlie')
+            ->where('is_approved', 1)
+            ->where('barangay', $barangay)
+            ->whereMonth('date', $month)
+            ->count();
+
         // Fetch Punong Barangay and Contact Number
         $barangayInfo = DB::table('barangays')
             ->where('name', $barangay)
@@ -74,6 +92,9 @@ Route::middleware('auth')->group(function () {
             'medicals_count' => $medicalsCount,
             'punong_barangay' => $barangayInfo->punong_barangay ?? 'Unknown',
             'contact_number' => $barangayInfo->contact_number ?? 'N/A',
+            'alpha_count' => $alphaCount,
+            'bravo_count' => $bravoCount,
+            'charlie_count' => $charlieCount,
         ]);
     });
 });
