@@ -98,12 +98,14 @@ use Carbon\Carbon;
 
     <!-- Modal -->
     <div id="barangayModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
-        <div class="bg-white rounded-lg p-6 w-[430px] shadow-lg relative z-50">
-            <button onclick="closeModal()" class="bg-red-400 px-2 py-1 hover:bg-red-800 text-white rounded absolute top-2 right-2"><i class="fa fa-times-circle" aria-hidden="true"></i></button>
-            <h2 id="modalBarangayName" class="text-xl font-semibold mb-4"></h2>
-            <p id="modalDetails" class="text-gray-700 mb-4">Details will be shown here.</p>
-        </div>
+    <div class="bg-white rounded-lg p-6 w-[430px] shadow-lg relative z-50 animate-bounce-modal">
+        <button onclick="closeModal()" class="bg-red-400 px-2 py-1 hover:bg-red-800 text-white rounded absolute top-2 right-2">
+            <i class="fa fa-times-circle" aria-hidden="true"></i>
+        </button>
+        <h2 id="modalBarangayName" class="text-xl font-semibold mb-4"></h2>
+        <p id="modalDetails" class="text-gray-700 mb-4">Details will be shown here.</p>
     </div>
+</div>
 
 </x-app-layout>
 
@@ -158,18 +160,20 @@ use Carbon\Carbon;
                                     const medicalCases = data.medicals_count || 0;
                                     const punongBarangay = data.punong_barangay || 'Unknown';
                                     const contactNumber = data.contact_number || 'N/A';
-                                    const alpha = data.alpha_count || 0;
-                                    const bravo = data.bravo_count || 0;
-                                    const charlie = data.charlie_count || 0;
+
+                                    // Combine medical and accident counts for each rescue team
+                                    const alphaCount = (data.alpha.medicals_count || 0) + (data.alpha.accidents_count || 0);
+                                    const bravoCount = (data.bravo.medicals_count || 0) + (data.bravo.accidents_count || 0);
+                                    const charlieCount = (data.charlie.medicals_count || 0) + (data.charlie.accidents_count || 0);
 
                                     // Prepare modal content
                                     const details = `
-                                    Vehicular Accidents: ${accidents}<br>
-                                    Medical Cases: ${medicalCases}<br>
-                                    Punong Barangay: ${punongBarangay}<br>
-                                    Contact Number: ${contactNumber}<br>
-                                    Alpha: ${alpha} | Bravo: ${bravo} | Charlie: ${charlie}
-                                `;
+                                        Vehicular Accidents: ${accidents}<br>
+                                        Medical Cases: ${medicalCases}<br>
+                                        Punong Barangay: ${punongBarangay}<br>
+                                        Contact Number: ${contactNumber}<br>
+                                        Alpha: ${alphaCount} | Bravo: ${bravoCount} | Charlie: ${charlieCount}
+                                    `;
 
                                     // Open modal with data
                                     openModal(barangayName, details);
@@ -217,11 +221,21 @@ use Carbon\Carbon;
         filter: blur(5px);
     }
 
-    /* Modal overlay */
-    #barangayModal {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    @keyframes bounce-modal {
+        0%, 100% {
+            transform: scale(1);
+        }
+        30% {
+            transform: scale(1.1);
+        }
+        50% {
+            transform: scale(0.9);
+        }
+        70% {
+            transform: scale(1.05);
+        }
     }
-
+    .animate-bounce-modal {
+        animation: bounce-modal 0.6s ease-in-out;
+    }
 </style>

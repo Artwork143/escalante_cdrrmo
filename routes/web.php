@@ -63,23 +63,24 @@ Route::middleware('auth')->group(function () {
             ->whereMonth('date', $month)
             ->count();
 
-        $alphaCount = MedicalCase::where('rescue_team', 'Alpha')
-            ->where('is_approved', 1)
-            ->where('barangay', $barangay)
-            ->whereMonth('date', $month)
-            ->count();
+        $rescueTeams = ['Alpha', 'Bravo', 'Charlie'];
+        $counts = [];
 
-        $bravoCount = MedicalCase::where('rescue_team', 'Bravo')
-            ->where('is_approved', 1)
-            ->where('barangay', $barangay)
-            ->whereMonth('date', $month)
-            ->count();
+        foreach ($rescueTeams as $team) {
+            // Medical cases count by team
+            $counts[$team]['medicals_count'] = MedicalCase::where('rescue_team', $team)
+                ->where('is_approved', 1)
+                ->where('barangay', $barangay)
+                ->whereMonth('date', $month)
+                ->count();
 
-        $charlieCount = MedicalCase::where('rescue_team', 'Charlie')
-            ->where('is_approved', 1)
-            ->where('barangay', $barangay)
-            ->whereMonth('date', $month)
-            ->count();
+            // Vehicular accident cases count by team
+            $counts[$team]['accidents_count'] = VehicularAccident::where('rescue_team', $team)
+                ->where('is_approved', 1)
+                ->where('barangay', $barangay)
+                ->whereMonth('date', $month)
+                ->count();
+        }
 
         // Fetch Punong Barangay and Contact Number
         $barangayInfo = DB::table('barangays')
@@ -92,9 +93,18 @@ Route::middleware('auth')->group(function () {
             'medicals_count' => $medicalsCount,
             'punong_barangay' => $barangayInfo->punong_barangay ?? 'Unknown',
             'contact_number' => $barangayInfo->contact_number ?? 'N/A',
-            'alpha_count' => $alphaCount,
-            'bravo_count' => $bravoCount,
-            'charlie_count' => $charlieCount,
+            'alpha' => [
+                'medicals_count' => $counts['Alpha']['medicals_count'],
+                'accidents_count' => $counts['Alpha']['accidents_count'],
+            ],
+            'bravo' => [
+                'medicals_count' => $counts['Bravo']['medicals_count'],
+                'accidents_count' => $counts['Bravo']['accidents_count'],
+            ],
+            'charlie' => [
+                'medicals_count' => $counts['Charlie']['medicals_count'],
+                'accidents_count' => $counts['Charlie']['accidents_count'],
+            ],
         ]);
     });
 });
