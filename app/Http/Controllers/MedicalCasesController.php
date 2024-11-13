@@ -17,36 +17,54 @@ class MedicalCasesController extends Controller
      */
     public function index(Request $request)
     {
-        // Filter by month and year if selected
+        // Filter by month, year, and search term if selected
         $month = $request->input('month');
         $year = $request->input('year');
+        $search = $request->input('search');
 
         // Check if the user is an admin
         $isAdmin = Auth::user()->role === 0; // Assuming role 0 is admin
 
-        // Retrieve medical cases based on approval status, month, and year
-        $medicalCases = MedicalCase::when($month, function ($query, $month) {
+        // Query to get all medical cases for display in the table
+        $medicalCasesQuery = MedicalCase::when($month, function ($query, $month) {
             return $query->whereMonth('date', $month);
         })
             ->when($year, function ($query, $year) {
                 return $query->whereYear('date', $year);
             })
-            ->when(!$isAdmin, function ($query) {
-                return $query->where('is_approved', 1); // Non-admin users only see approved medical cases
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('rescue_team', 'like', '%' . $search . '%')
+                        ->orWhere('place_of_incident', 'like', '%' . $search . '%')
+                        ->orWhere('barangay', 'like', '%' . $search . '%')
+                        ->orWhere('chief_complaints', 'like', '%' . $search . '%')
+                        ->orWhere('facility_name', 'like', '%' . $search . '%');
+                });
             })
-            ->get();
+            ->when(!$isAdmin, function ($query) {
+                return $query->where('is_approved', 1); // Non-admin users only see approved cases
+            })
+            ->orderBy('is_approved', 'asc'); // Orders by status: Pending first, then Approved
 
-        // Calculate total patients for approved medical cases only
-        $totalPatients = $medicalCases->where('is_approved', 1)->sum('no_of_patients');
+        // Retrieve paginated cases for display
+        $medicalCases = $medicalCasesQuery->paginate(5)->appends(['month' => $month, 'year' => $year, 'search' => $search]);
+
+        // Calculate the total patients across approved cases only
+        $totalPatients = $medicalCasesQuery->where('is_approved', 1)->sum('no_of_patients');
+
+        // Retrieve all cases without pagination for printing
+        $allMedicalCasesForPrint = $medicalCasesQuery->get();
 
         $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
         return view('medical_cases.index', [
             'medicalCases' => $medicalCases,
+            'allMedicalCasesForPrint' => $allMedicalCasesForPrint,
             'months' => $months,
             'totalPatients' => $totalPatients,
         ]);
     }
+
 
     /**
      * Show the form for creating a new medical case.
@@ -162,88 +180,88 @@ class MedicalCasesController extends Controller
     }
 
     public function showYearlyReport()
-{
-    // Fetch vehicular accident data grouped by barangay, cause_of_incident, and year
-    $yearlyAccidents = VehicularAccident::select(
-        'barangay',
-        'cause_of_incident',
-        DB::raw('YEAR(date) as year'),
-        DB::raw('COUNT(*) as total_accidents')
-    )
-        ->where('is_approved', 1)
-        ->groupBy('barangay', 'cause_of_incident', 'year')
-        ->get()
-        ->groupBy('barangay');
+    {
+        // Fetch vehicular accident data grouped by barangay, cause_of_incident, and year
+        $yearlyAccidents = VehicularAccident::select(
+            'barangay',
+            'cause_of_incident',
+            DB::raw('YEAR(date) as year'),
+            DB::raw('COUNT(*) as total_accidents')
+        )
+            ->where('is_approved', 1)
+            ->groupBy('barangay', 'cause_of_incident', 'year')
+            ->get()
+            ->groupBy('barangay');
 
-    // Restructure the data to combine causes of incidents and group by year
-    $yearlyAccidentsFormatted = [];
-    foreach ($yearlyAccidents as $barangay => $accidentsByBarangay) {
-        $yearlyAccidentsFormatted[$barangay] = [
-            'causes_of_incident' => $accidentsByBarangay->pluck('cause_of_incident')->unique()->implode(', '), // Combine causes
-        ];
-        foreach ($accidentsByBarangay as $accident) {
-            $yearlyAccidentsFormatted[$barangay][$accident->year] = ($yearlyAccidentsFormatted[$barangay][$accident->year] ?? 0) + $accident->total_accidents;
-        }
-    }
-
-    // Fetch medical cases data grouped by barangay, chief_complaints, and year
-    $yearlyMedicals = MedicalCase::select(
-        'barangay',
-        'chief_complaints',
-        DB::raw('YEAR(date) as year'),
-        DB::raw('COUNT(*) as total_medicals')
-    )
-        ->where('is_approved', 1)
-        ->groupBy('barangay', 'chief_complaints', 'year')
-        ->get()
-        ->groupBy('barangay');
-
-    // Restructure the data to combine chief complaints and group by year
-    $yearlyMedicalsFormatted = [];
-    foreach ($yearlyMedicals as $barangay => $medicalsByBarangay) {
-        $yearlyMedicalsFormatted[$barangay] = [
-            'chief_complaints' => $medicalsByBarangay->pluck('chief_complaints')->unique()->implode(', '), // Combine complaints
-        ];
-        foreach ($medicalsByBarangay as $medical) {
-            $yearlyMedicalsFormatted[$barangay][$medical->year] = ($yearlyMedicalsFormatted[$barangay][$medical->year] ?? 0) + $medical->total_medicals;
-        }
-    }
-
-    // Initialize the combined response data
-    $yearlyResponses = [];
-    
-    // Combine the yearly accidents and yearly medicals
-    foreach ($yearlyAccidentsFormatted as $barangay => $accidents) {
-        $yearlyResponses[$barangay] = $accidents; // Start with accidents data
-        $yearlyResponses[$barangay]['total'] = 0; // Initialize total
-
-        // Add yearly medicals to the responses
-        if (isset($yearlyMedicalsFormatted[$barangay])) {
-            foreach ($yearlyMedicalsFormatted[$barangay] as $year => $total_medicals) {
-                // Ensure that we are summing integers
-                $yearlyResponses[$barangay][$year] = ($yearlyResponses[$barangay][$year] ?? 0) + (int)$total_medicals; 
-
-                // Update total for the barangay
-                $yearlyResponses[$barangay]['total'] += (int)$total_medicals; // Ensure this is an integer
+        // Restructure the data to combine causes of incidents and group by year
+        $yearlyAccidentsFormatted = [];
+        foreach ($yearlyAccidents as $barangay => $accidentsByBarangay) {
+            $yearlyAccidentsFormatted[$barangay] = [
+                'causes_of_incident' => $accidentsByBarangay->pluck('cause_of_incident')->unique()->implode(', '), // Combine causes
+            ];
+            foreach ($accidentsByBarangay as $accident) {
+                $yearlyAccidentsFormatted[$barangay][$accident->year] = ($yearlyAccidentsFormatted[$barangay][$accident->year] ?? 0) + $accident->total_accidents;
             }
         }
-    }
 
-    // Add remaining medicals for barangays not in accidents
-    foreach ($yearlyMedicalsFormatted as $barangay => $medicals) {
-        if (!isset($yearlyResponses[$barangay])) {
-            $yearlyResponses[$barangay] = $medicals; // Start with medicals data
-            $yearlyResponses[$barangay]['total'] = array_sum(array_map('intval', $medicals)); // Convert to integers for sum
+        // Fetch medical cases data grouped by barangay, chief_complaints, and year
+        $yearlyMedicals = MedicalCase::select(
+            'barangay',
+            'chief_complaints',
+            DB::raw('YEAR(date) as year'),
+            DB::raw('COUNT(*) as total_medicals')
+        )
+            ->where('is_approved', 1)
+            ->groupBy('barangay', 'chief_complaints', 'year')
+            ->get()
+            ->groupBy('barangay');
+
+        // Restructure the data to combine chief complaints and group by year
+        $yearlyMedicalsFormatted = [];
+        foreach ($yearlyMedicals as $barangay => $medicalsByBarangay) {
+            $yearlyMedicalsFormatted[$barangay] = [
+                'chief_complaints' => $medicalsByBarangay->pluck('chief_complaints')->unique()->implode(', '), // Combine complaints
+            ];
+            foreach ($medicalsByBarangay as $medical) {
+                $yearlyMedicalsFormatted[$barangay][$medical->year] = ($yearlyMedicalsFormatted[$barangay][$medical->year] ?? 0) + $medical->total_medicals;
+            }
         }
-    }
 
-    // Pass both variables to the view
-    return view('medical_cases.yearly', [
-        'yearlyAccidents' => $yearlyAccidentsFormatted,
-        'yearlyMedicals' => $yearlyMedicalsFormatted,
-        'yearlyResponses' => $yearlyResponses, // Pass combined data to the view
-    ]);
-}
+        // Initialize the combined response data
+        $yearlyResponses = [];
+
+        // Combine the yearly accidents and yearly medicals
+        foreach ($yearlyAccidentsFormatted as $barangay => $accidents) {
+            $yearlyResponses[$barangay] = $accidents; // Start with accidents data
+            $yearlyResponses[$barangay]['total'] = 0; // Initialize total
+
+            // Add yearly medicals to the responses
+            if (isset($yearlyMedicalsFormatted[$barangay])) {
+                foreach ($yearlyMedicalsFormatted[$barangay] as $year => $total_medicals) {
+                    // Ensure that we are summing integers
+                    $yearlyResponses[$barangay][$year] = ($yearlyResponses[$barangay][$year] ?? 0) + (int)$total_medicals;
+
+                    // Update total for the barangay
+                    $yearlyResponses[$barangay]['total'] += (int)$total_medicals; // Ensure this is an integer
+                }
+            }
+        }
+
+        // Add remaining medicals for barangays not in accidents
+        foreach ($yearlyMedicalsFormatted as $barangay => $medicals) {
+            if (!isset($yearlyResponses[$barangay])) {
+                $yearlyResponses[$barangay] = $medicals; // Start with medicals data
+                $yearlyResponses[$barangay]['total'] = array_sum(array_map('intval', $medicals)); // Convert to integers for sum
+            }
+        }
+
+        // Pass both variables to the view
+        return view('medical_cases.yearly', [
+            'yearlyAccidents' => $yearlyAccidentsFormatted,
+            'yearlyMedicals' => $yearlyMedicalsFormatted,
+            'yearlyResponses' => $yearlyResponses, // Pass combined data to the view
+        ]);
+    }
 
 
 

@@ -98,8 +98,8 @@ use Carbon\Carbon;
 
     <!-- Modal -->
     <div id="barangayModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
-    <div class="bg-white rounded-lg p-6 w-[430px] shadow-lg relative z-50 animate-bounce-modal">
-        <button onclick="closeModal()" class="bg-red-400 px-2 py-1 hover:bg-red-800 text-white rounded absolute top-2 right-2">
+    <div id="modalContent" class="bg-white rounded-lg p-6 w-[430px] shadow-lg relative z-50 animate-bounce-in">
+        <button onclick="closeModal()" class="bg-red-400 px-2 py-1 hover:scale-90 transition duration-150 hover:bg-red-800 text-white rounded absolute top-2 right-2">
             <i class="fa fa-times-circle" aria-hidden="true"></i>
         </button>
         <h2 id="modalBarangayName" class="text-xl font-semibold mb-4"></h2>
@@ -206,24 +206,35 @@ use Carbon\Carbon;
         document.getElementById('modalBarangayName').innerText = barangayName;
         document.getElementById('modalDetails').innerHTML = details;
         document.getElementById('barangayModal').style.display = 'flex'; // Show modal
+        document.getElementById('modalContent').classList.remove('animate-bounce-out');
+        document.getElementById('modalContent').classList.add('animate-bounce-in');
         document.getElementById('pageContent').classList.add('blur');
     }
 
     function closeModal() {
-        document.getElementById('barangayModal').style.display = 'none'; // Hide modal
-        document.getElementById('pageContent').classList.remove('blur');
+        const modalContent = document.getElementById('modalContent');
+        modalContent.classList.remove('animate-bounce-in');
+        modalContent.classList.add('animate-bounce-out');
+        
+        // Hide modal after closing animation
+        modalContent.addEventListener('animationend', function handleAnimationEnd() {
+            document.getElementById('barangayModal').style.display = 'none';
+            document.getElementById('pageContent').classList.remove('blur');
+            modalContent.removeEventListener('animationend', handleAnimationEnd);
+        });
     }
 </script>
 
 <style>
-    /* Blur the page content when the modal is open */
     .blur {
         filter: blur(5px);
     }
 
-    @keyframes bounce-modal {
+    /* Define keyframes for modal animations */
+    @keyframes bounce-in {
         0%, 100% {
             transform: scale(1);
+            opacity: 1;
         }
         30% {
             transform: scale(1.1);
@@ -235,7 +246,24 @@ use Carbon\Carbon;
             transform: scale(1.05);
         }
     }
-    .animate-bounce-modal {
-        animation: bounce-modal 0.6s ease-in-out;
+
+    @keyframes bounce-out {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+    }
+
+    /* Classes to apply animations */
+    .animate-bounce-in {
+        animation: bounce-in 0.6s ease-in-out forwards;
+    }
+
+    .animate-bounce-out {
+        animation: bounce-out 0.2s ease-in-out forwards;
     }
 </style>

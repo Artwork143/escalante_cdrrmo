@@ -40,33 +40,37 @@ use Carbon\Carbon;
                     <!-- Filter by Month and Year -->
                     <form method="GET" action="{{ route('medical_cases.index') }}" class="mb-4">
                         <label for="month" class="block text-sm font-medium text-white mb-1">{{ __("Filter by Date") }}</label>
-                        <div class="flex space-x-4">
-                            <select name="month" id="month" class="w-40 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">{{ __("Select Month") }}</option>
-                                @foreach($months as $key => $month)
-                                <option value="{{ $key + 1 }}" {{ request('month') == ($key + 1) ? 'selected' : '' }}>
-                                    {{ $month }}
-                                </option>
-                                @endforeach
-                            </select>
+                        <div class="flex space-x-4 justify-between">
+                            <div>
+                                <select name="month" id="month" class="w-40 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">{{ __("Select Month") }}</option>
+                                    @foreach($months as $key => $month)
+                                    <option value="{{ $key + 1 }}" {{ request('month') == ($key + 1) ? 'selected' : '' }}>
+                                        {{ $month }}
+                                    </option>
+                                    @endforeach
+                                </select>
 
-                            <select name="year" id="year" class="w-40 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">{{ __("Select Year") }}</option>
-                                @for ($i = date('Y'); $i >= 2000; $i--)
-                                <option value="{{ $i }}" {{ request('year') == $i ? 'selected' : '' }}>
-                                    {{ $i }}
-                                </option>
-                                @endfor
-                            </select>
+                                <select name="year" id="year" class="w-40 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">{{ __("Select Year") }}</option>
+                                    @for ($i = date('Y'); $i >= 2000; $i--)
+                                    <option value="{{ $i }}" {{ request('year') == $i ? 'selected' : '' }}>
+                                        {{ $i }}
+                                    </option>
+                                    @endfor
+                                </select>
 
-                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
-                                {{ __('Filter') }}
-                            </button>
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
+                                    {{ __('Filter') }}
+                                </button>
+                            </div>
+
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search cases..." class=" w-1/4 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 grid grid-row-2 hover:bg-gray-200" />
                         </div>
                     </form>
                 </div>
 
-                <div class="p-6 text-gray-900 print-header">
+                <div class="p-6 text-gray-900 print-header print-hidden">
 
                     @if(request('month'))
                     <p class="hidden print-show mt-1 pt-1 mb-1 pb-1 border-b-2 border-b-gray-300 text-center">
@@ -164,11 +168,70 @@ use Carbon\Carbon;
                     <p class="border-t-2 mt-4 border-t-gray-300 pt-2">{{ __("Please select a month to view the total responses per month.") }}</p>
                     @endif
 
+                    <!-- Pagination Links -->
+                    <div class="mt-4">
+                        {{ $medicalCases->links() }}
+                    </div>
+
                     @elseif ($medicalCases->isEmpty())
                     <p>{{ __("No medical cases found for the selected month.") }}</p>
                     @endif
 
                 </div>
+
+                <!-- Section for Printing Only -->
+                <div class="p-6 text-gray-900 print-show hidden print-header">
+                    <!-- Add Header Information -->
+                    @if(request('month'))
+                    <p class="mt-1 pt-1 mb-1 pb-1 border-b-2 border-b-gray-300 text-center">
+                        <span class="font-bold text-2xl">Medical Case</span> <br>
+                        Response summary for the month of <span class="text-red-600 font-bold">{{ $months[request('month') - 1] }} {{ request('year') }}</span>
+                    </p>
+                    @endif
+
+                    <!-- Print Table with Full Data -->
+                    @if ($allMedicalCasesForPrint->count() > 0)
+                    <div>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rescue Team</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Place of Incident</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Patients</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chief Complaints</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Facility Name</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach ($allMedicalCasesForPrint as $case)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $loop->iteration }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($case->date)->format('m/d/Y') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $case->rescue_team }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $case->place_of_incident }}, Brgy. {{ $case->barangay }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $case->no_of_patients }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $case->chief_complaints }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $case->facility_name }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Total Responses for the Month -->
+                    @if (request('month') && $totalPatients > 0)
+                    <p class="text-lg font-medium mt-4 border-t-2 border-t-gray-300 pt-2">
+                        {{ __("Total Responses for the Month: ") }} {{ $totalPatients }}
+                    </p>
+                    @endif
+
+                    @elseif ($allMedicalCasesForPrint->isEmpty())
+                    <p>{{ __("No medical cases found for the selected month.") }}</p>
+                    @endif
+                </div>
+
             </div>
 
             <div class="{{ auth()->user()->role === 0 ? 'flex' : 'hidden' }} print-hidden gap-3">

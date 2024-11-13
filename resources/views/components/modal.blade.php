@@ -1,12 +1,80 @@
-<div x-show="isOpen" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50" x-cloak>
-    <div @click.away="isOpen = false" class="bg-white w-11/12 md:max-w-md mx-auto rounded-lg shadow-lg py-4 px-6 text-gray-800">
-        <h3 class="text-xl font-semibold mb-2">Total Cases for <span x-text="barangayName"></span> of Brgy.</h3>
-        <p class="mb-2">Vehicular Accidents: <span x-text="accidents"></span></p>
-        <p class="mb-2">Medical Cases: <span x-text="medicalCases"></span></p>
-        <p class="font-semibold">Punong Barangay:</p>
-        <p class="mb-2" x-text="punongBarangay"></p>
-        <p class="font-semibold">Contact Number:</p>
-        <p x-text="contactNumber"></p>
-        <button @click="isOpen = false" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg">Close</button>
+@props([
+    'name',
+    'show' => false,
+    'maxWidth' => '2xl'
+])
+
+@php
+$maxWidthClass = [
+    'sm' => 'sm:max-w-sm',
+    'md' => 'sm:max-w-md',
+    'lg' => 'sm:max-w-lg',
+    'xl' => 'sm:max-w-xl',
+    '2xl' => 'sm:max-w-2xl',
+][$maxWidth];
+@endphp
+
+<div
+    x-data="{
+        show: @js($show),
+        focusables() {
+            let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])';
+            return [...$el.querySelectorAll(selector)].filter(el => !el.hasAttribute('disabled'));
+        },
+        firstFocusable() { return this.focusables()[0] },
+        lastFocusable() { return this.focusables().slice(-1)[0] },
+        nextFocusable() { return this.focusables()[this.nextFocusableIndex()] || this.firstFocusable() },
+        prevFocusable() { return this.focusables()[this.prevFocusableIndex()] || this.lastFocusable() },
+        nextFocusableIndex() { return (this.focusables().indexOf(document.activeElement) + 1) % this.focusables().length },
+        prevFocusableIndex() { return Math.max(0, this.focusables().indexOf(document.activeElement) - 1) },
+    }"
+    x-init="$watch('show', value => {
+        if (value) {
+            document.body.classList.add('overflow-y-hidden');
+            @if($attributes->has('focusable'))
+                setTimeout(() => firstFocusable().focus(), 100);
+            @endif
+        } else {
+            document.body.classList.remove('overflow-y-hidden');
+        }
+    })"
+    x-on:open-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
+    x-on:close-modal.window="$event.detail == '{{ $name }}' ? show = false : null"
+    x-on:close.stop="show = false"
+    x-on:keydown.escape.window="show = false"
+    x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
+    x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
+    x-show="show"
+    class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
+    style="display: none;"
+    x-bind:style="show ? 'display: block;' : ''"
+>
+    <!-- Background overlay -->
+    <div
+        x-show="show"
+        class="fixed inset-0 transform transition-all"
+        x-on:click="show = false"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+    </div>
+
+    <!-- Modal container -->
+    <div
+        x-show="show"
+        class="mb-6 bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full {{ $maxWidthClass }} sm:mx-auto"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+    >
+        {{ $slot }}
     </div>
 </div>
