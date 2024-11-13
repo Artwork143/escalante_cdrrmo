@@ -53,7 +53,7 @@ class MedicalCasesController extends Controller
         $totalPatients = $medicalCasesQuery->where('is_approved', 1)->sum('no_of_patients');
 
         // Retrieve all cases without pagination for printing
-        $allMedicalCasesForPrint = $medicalCasesQuery->get();
+        $allMedicalCasesForPrint = $medicalCasesQuery->paginate($totalPatients)->appends(['month' => $month, 'year' => $year]);
 
         $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
