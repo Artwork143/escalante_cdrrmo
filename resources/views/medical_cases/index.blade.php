@@ -261,7 +261,16 @@ use Carbon\Carbon;
 
             <!-- Detailed Table Section: Initially hidden -->
             <div id="barangayDetails" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10 print-hidden">
-                <h3 id="barangayTitle" class="text-lg font-semibold mb-4 mt-2"></h3>
+                
+                <div class="mb-4 flex justify-between">
+                    <h3 id="barangayTitle" class="text-lg font-semibold mb-4 mt-2"></h3>
+                    <input
+                        type="text"
+                        id="searchBar"
+                        placeholder="Search cases..."
+                        class="border rounded px-3 py-2 w-1/4"
+                        oninput="searchBarangayCases()" />
+                </div>
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -279,7 +288,7 @@ use Carbon\Carbon;
                 </table>
 
                 <!-- Pagination controls -->
-                <div id="paginationControls" class="mt-4 flex gap-2">
+                <div id="paginationControls" class="mt-4 pt-4 flex gap-2 justify-between border-t-2 border-t-gray-400">
                     <!-- Pagination buttons will be dynamically added here -->
                 </div>
             </div>
@@ -368,21 +377,64 @@ use Carbon\Carbon;
                             <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
                         </tr>
                     `).join('');
+                        // Scroll to footer
+                        document.getElementById('pageFooter').scrollIntoView({
+                            behavior: 'smooth'
+                        });
                     }
 
+                    // Attach renderPaginationControls to the window object for global access
                     // Attach renderPaginationControls to the window object for global access
                     window.renderPaginationControls = function(data, barangay) {
                         const paginationContainer = document.getElementById('paginationControls');
                         paginationContainer.innerHTML = '';
 
+                        // Display range information (e.g., "Showing 1 to 5 of 23 results")
+                        const start = (data.current_page - 1) * data.per_page + 1;
+                        const end = Math.min(data.total, data.current_page * data.per_page);
+                        const rangeInfo = document.createElement('div');
+                        rangeInfo.classList.add('text-gray-700', 'text-sm', 'mb-2');
+                        rangeInfo.textContent = `Showing ${start} to ${end} of ${data.total} results`;
+                        paginationContainer.appendChild(rangeInfo);
+
+                        // Create pagination controls container
+                        const paginationControls = document.createElement('div');
+                        paginationControls.classList.add('flex', 'justify-center', 'space-x-2', 'border', 'rounded-lg', 'px-3', 'py-1');
+
+                        // "Previous" button
                         if (data.prev_page_url) {
-                            paginationContainer.insertAdjacentHTML('beforeend', `<button onclick="loadBarangayDetails('${barangay}', ${data.current_page - 1})" class="pagination-button">Previous</button>`);
+                            const prevButton = document.createElement('button');
+                            prevButton.classList.add('px-3', 'py-1', 'border', 'rounded-l-lg', 'hover:bg-gray-100');
+                            prevButton.textContent = '«';
+                            prevButton.onclick = () => loadBarangayDetails(barangay, data.current_page - 1);
+                            paginationControls.appendChild(prevButton);
                         }
 
-                        if (data.next_page_url) {
-                            paginationContainer.insertAdjacentHTML('beforeend', `<button onclick="loadBarangayDetails('${barangay}', ${data.current_page + 1})" class="pagination-button">Next</button>`);
+                        // Page numbers
+                        for (let i = 1; i <= data.last_page; i++) {
+                            const pageButton = document.createElement('button');
+                            pageButton.classList.add('px-3', 'py-1', 'border', 'hover:bg-gray-100');
+                            if (i === data.current_page) {
+                                pageButton.classList.add('bg-gray-300'); // Current page styling
+                            }
+                            pageButton.textContent = i;
+                            pageButton.onclick = () => loadBarangayDetails(barangay, i);
+                            paginationControls.appendChild(pageButton);
                         }
+
+                        // "Next" button
+                        if (data.next_page_url) {
+                            const nextButton = document.createElement('button');
+                            nextButton.classList.add('px-3', 'py-1', 'border', 'rounded-r-lg', 'hover:bg-gray-100');
+                            nextButton.textContent = '»';
+                            nextButton.onclick = () => loadBarangayDetails(barangay, data.current_page + 1);
+                            paginationControls.appendChild(nextButton);
+                        }
+
+                        // Append pagination controls to the container
+                        paginationContainer.appendChild(paginationControls);
                     };
+
 
                     // Render the Horizontal Bar Chart for ranking
                     renderBarChart(sortedForRanking);

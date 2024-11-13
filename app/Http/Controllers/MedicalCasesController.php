@@ -293,6 +293,7 @@ class MedicalCasesController extends Controller
         $year = $request->input('year');
         $page = $request->input('page', 1); // Default to the first page
         $perPage = 5; // Number of items per page
+        $search = $request->input('search'); // Search query
 
         // Fetch paginated cases for the given barangay, month, and year
         $barangayDetails = MedicalCase::where('barangay', $barangay)
@@ -301,6 +302,13 @@ class MedicalCasesController extends Controller
             })
             ->when($year, function ($query) use ($year) {
                 $query->whereYear('date', $year);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('rescue_team', 'like', '%' . $search . '%')
+                        ->orWhere('place_of_incident', 'like', '%' . $search . '%')
+                        ->orWhere('chief_complaints', 'like', '%' . $search . '%');
+                });
             })
             ->where('is_approved', 1)
             ->paginate($perPage, ['*'], 'page', $page);
