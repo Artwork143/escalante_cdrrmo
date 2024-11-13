@@ -291,8 +291,10 @@ class MedicalCasesController extends Controller
     {
         $month = $request->input('month');
         $year = $request->input('year');
+        $page = $request->input('page', 1); // Default to the first page
+        $perPage = 5; // Number of items per page
 
-        // Fetch detailed cases for the given barangay, month, and year
+        // Fetch paginated cases for the given barangay, month, and year
         $barangayDetails = MedicalCase::where('barangay', $barangay)
             ->when($month, function ($query) use ($month) {
                 $query->whereMonth('date', $month);
@@ -301,10 +303,11 @@ class MedicalCasesController extends Controller
                 $query->whereYear('date', $year);
             })
             ->where('is_approved', 1)
-            ->get(['date', 'rescue_team', 'place_of_incident', 'no_of_patients', 'chief_complaints', 'facility_name', 'barangay']);
+            ->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json($barangayDetails);
     }
+
 
     public function getYearlyMedicals()
     {

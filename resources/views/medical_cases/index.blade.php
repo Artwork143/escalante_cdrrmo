@@ -274,10 +274,16 @@ use Carbon\Carbon;
                         </tr>
                     </thead>
                     <tbody id="barangayTableBody" class="bg-white divide-y divide-gray-200">
-                        <!-- Table rows will be inserted here dynamically -->
+                        <!-- Table rows will be dynamically added here -->
                     </tbody>
                 </table>
+
+                <!-- Pagination controls -->
+                <div id="paginationControls" class="mt-4 flex gap-2">
+                    <!-- Pagination buttons will be dynamically added here -->
+                </div>
             </div>
+
 
         </div>
     </div>
@@ -286,20 +292,18 @@ use Carbon\Carbon;
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Fetch data from backend (you can pass the data from controller or fetch via API)
+            // Fetch barangay cases data from the backend
             fetch(`/get-barangay-cases?month={{ request('month') }}&year={{ request('year') }}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Sort data by total_cases in ascending order (lowest to highest) for pie chart
                     const sortedForChart = [...data].sort((a, b) => a.total_cases - b.total_cases);
-
-                    // Sort data by total_cases in descending order (highest to lowest) for ranking
                     const sortedForRanking = [...data].sort((a, b) => b.total_cases - a.total_cases);
 
                     const labels = sortedForChart.map(item => item.barangay);
                     const values = sortedForChart.map(item => item.total_cases);
+                    const backgroundColors = values.map(() => getRandomColor());
 
-                    // Generate random colors for each value
+                    // Function to generate random colors
                     function getRandomColor() {
                         const letters = '0123456789ABCDEF';
                         let color = '#';
@@ -309,151 +313,125 @@ use Carbon\Carbon;
                         return color;
                     }
 
-                    const backgroundColors = values.map(() => getRandomColor());
-
                     // Render the Pie Chart
-                    const ctxPie = document.getElementById('barangayPieChart').getContext('2d');
-                    const barangayPieChart = new Chart(ctxPie, {
-                        type: 'pie',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'Medical Cases',
-                                data: values,
-                                backgroundColor: backgroundColors,
-                                hoverOffset: 4,
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            onClick: function(e, item) {
-                                if (item.length > 0) {
-                                    const index = item[0].index;
-                                    const barangay = labels[index];
+                    renderPieChart(labels, values, backgroundColors);
 
-                                    // Fetch barangay case details
-                                    fetch(`/get-barangay-details/${barangay}?month={{ request('month') }}&year={{ request('year') }} `)
-                                        .then(response => response.json())
-                                        .then(barangayData => {
-                                            // Show the table
-                                            document.getElementById('barangayDetails').classList.remove('hidden');
-
-                                            // Update the title
-                                            document.getElementById('barangayTitle').innerText = `Details of case for Brgy. ${barangay}`;
-
-                                            // Clear existing rows
-                                            const tableBody = document.getElementById('barangayTableBody');
-                                            tableBody.innerHTML = '';
-
-                                            // Insert new rows into the table
-                                            barangayData.forEach(caseItem => {
-                                                const row = `
-                    <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
-                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
-                        <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
-                        <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
-                    </tr>
-                `;
-                                                tableBody.insertAdjacentHTML('beforeend', row);
-                                            });
-
-                                            // Scroll to footer
-                                            document.getElementById('pageFooter').scrollIntoView({
-                                                behavior: 'smooth'
-                                            });
-                                        });
+                    // Function to render the Pie Chart
+                    function renderPieChart(labels, values, backgroundColors) {
+                        const ctxPie = document.getElementById('barangayPieChart').getContext('2d');
+                        new Chart(ctxPie, {
+                            type: 'pie',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Medical Cases',
+                                    data: values,
+                                    backgroundColor: backgroundColors,
+                                    hoverOffset: 4,
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                onClick: (e, item) => {
+                                    if (item.length > 0) {
+                                        const index = item[0].index;
+                                        const barangay = labels[index];
+                                        loadBarangayDetails(barangay, 1); // Start from page 1
+                                    }
                                 }
                             }
+                        });
+                    }
 
+                    // Attach loadBarangayDetails and renderPaginationControls to the window object
+                    window.loadBarangayDetails = function(barangay, page = 1) {
+                        fetch(`/get-barangay-details/${barangay}?month={{ request('month') }}&year={{ request('year') }}&page=${page}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                displayBarangayDetails(barangay, data.data);
+                                renderPaginationControls(data, barangay);
+                            });
+                    };
+
+                    // Display barangay details in the table
+                    function displayBarangayDetails(barangay, cases) {
+                        document.getElementById('barangayDetails').classList.remove('hidden');
+                        document.getElementById('barangayTitle').innerText = `Details of cases for Brgy. ${barangay}`;
+                        const tableBody = document.getElementById('barangayTableBody');
+                        tableBody.innerHTML = cases.map(caseItem => `
+                        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
+                            <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
+                            <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
+                        </tr>
+                    `).join('');
+                    }
+
+                    // Attach renderPaginationControls to the window object for global access
+                    window.renderPaginationControls = function(data, barangay) {
+                        const paginationContainer = document.getElementById('paginationControls');
+                        paginationContainer.innerHTML = '';
+
+                        if (data.prev_page_url) {
+                            paginationContainer.insertAdjacentHTML('beforeend', `<button onclick="loadBarangayDetails('${barangay}', ${data.current_page - 1})" class="pagination-button">Previous</button>`);
                         }
-                    });
 
+                        if (data.next_page_url) {
+                            paginationContainer.insertAdjacentHTML('beforeend', `<button onclick="loadBarangayDetails('${barangay}', ${data.current_page + 1})" class="pagination-button">Next</button>`);
+                        }
+                    };
 
-                    // Prepare data for horizontal bar chart (ranking)
-                    const rankingLabels = sortedForRanking.map(item => item.barangay);
-                    const rankingValues = sortedForRanking.map(item => item.total_cases);
+                    // Render the Horizontal Bar Chart for ranking
+                    renderBarChart(sortedForRanking);
 
-                    // Get the barangay with the highest number of cases
+                    function renderBarChart(sortedForRanking) {
+                        const rankingLabels = sortedForRanking.map(item => item.barangay);
+                        const rankingValues = sortedForRanking.map(item => item.total_cases);
+                        const ctxBar = document.getElementById('barangayRankingChart').getContext('2d');
+
+                        new Chart(ctxBar, {
+                            type: 'bar',
+                            data: {
+                                labels: rankingLabels,
+                                datasets: [{
+                                    label: 'Total Cases',
+                                    data: rankingValues,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                indexAxis: 'y',
+                                scales: {
+                                    x: {
+                                        beginAtZero: true
+                                    }
+                                },
+                                responsive: true,
+                                onClick: (e, item) => {
+                                    if (item.length > 0) {
+                                        const index = item[0].index;
+                                        const barangay = rankingLabels[index];
+                                        loadBarangayDetails(barangay, 1); // Start from page 1
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // Show suggestion for barangay with the highest cases
                     const highestCaseBarangay = sortedForRanking[0].barangay;
                     const highestCaseCount = sortedForRanking[0].total_cases;
-
-                    // Show the suggestion box and display the barangay with the highest cases
                     const suggestionBox = document.getElementById('suggestionBox');
                     const focusBarangay = document.getElementById('focusBarangay');
                     focusBarangay.innerText = `${highestCaseBarangay} (${highestCaseCount} cases)`;
-
                     if (highestCaseCount > 1) {
                         suggestionBox.classList.remove('hidden');
                     }
-
-                    // Render the Horizontal Bar Chart
-                    const ctxBar = document.getElementById('barangayRankingChart').getContext('2d');
-                    const barangayRankingChart = new Chart(ctxBar, {
-                        type: 'bar',
-                        data: {
-                            labels: rankingLabels,
-                            datasets: [{
-                                label: 'Total Cases',
-                                data: rankingValues,
-                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y', // This makes it horizontal
-                            scales: {
-                                x: {
-                                    beginAtZero: true
-                                }
-                            },
-                            responsive: true,
-                            onClick: function(e, item) {
-                                if (item.length > 0) {
-                                    const index = item[0].index;
-                                    const barangay = rankingLabels[index];
-
-                                    // Fetch barangay case details
-                                    fetch(`/get-barangay-details/${barangay}?month={{ request('month') }}&year={{ request('year') }}`)
-                                        .then(response => response.json())
-                                        .then(barangayData => {
-                                            // Show the table
-                                            document.getElementById('barangayDetails').classList.remove('hidden');
-
-                                            // Update the title
-                                            document.getElementById('barangayTitle').innerText = `Details of case for Brgy. ${barangay}`;
-
-                                            // Clear existing rows
-                                            const tableBody = document.getElementById('barangayTableBody');
-                                            tableBody.innerHTML = '';
-
-                                            // Insert new rows into the table
-                                            barangayData.forEach(caseItem => {
-                                                const row = `
-                    <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
-                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
-                        <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
-                        <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
-                    </tr>
-                `;
-                                                tableBody.insertAdjacentHTML('beforeend', row);
-                                            });
-
-                                            // Scroll to footer
-                                            document.getElementById('pageFooter').scrollIntoView({
-                                                behavior: 'smooth'
-                                            });
-                                        });
-                                }
-                            }
-                        }
-                    });
                 });
         });
     </script>
