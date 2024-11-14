@@ -14,33 +14,50 @@ class VehicularAccidentsController extends Controller
      */
     public function index(Request $request)
     {
-        // Filter by month if selected
+        // Filter by month, year, and search term if selected
         $month = $request->input('month');
         $year = $request->input('year');
+        $search = $request->input('search');
 
         // Check if the user is an admin
         $isAdmin = Auth::user()->role === 0; // Assuming role 0 is admin
 
-        // Retrieve accidents based on approval status and month filter
-        $vehicularAccidents = VehicularAccident::when($month, function ($query, $month) {
+        // Query to get all vehicular accidents for display in the table
+        $vehicularAccidentsQuery = VehicularAccident::when($month, function ($query, $month) {
             return $query->whereMonth('date', $month);
         })
             ->when($year, function ($query, $year) {
                 return $query->whereYear('date', $year);
             })
-            ->when(!$isAdmin, function ($query) {
-                return $query->where('is_approved', 1); // Non-admin users only see approved accidents
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('rescue_team', 'like', '%' . $search . '%')
+                        ->orWhere('place_of_incident', 'like', '%' . $search . '%')
+                        ->orWhere('barangay', 'like', '%' . $search . '%')
+                        ->orWhere('cause_of_incident', 'like', '%' . $search . '%')
+                        ->orWhere('vehicles_involved', 'like', '%' . $search . '%')
+                        ->orWhere('facility_name', 'like', '%' . $search . '%');
+                });
             })
-            ->get();
+            ->when(!$isAdmin, function ($query) {
+                return $query->where('is_approved', 1); // Non-admin users only see approved cases
+            })
+            ->orderBy('is_approved', 'asc'); // Orders by status: Pending first, then Approved
 
-        // Total number of patients for all listed accidents (since you filtered approved accidents already)
-        $totalPatients = $vehicularAccidents->where('is_approved', 1)->sum('no_of_patients');
+        // Retrieve paginated cases for display
+        $vehicularAccidents = $vehicularAccidentsQuery->paginate(5)->appends(['month' => $month, 'year' => $year, 'search' => $search]);
 
-        // Months array
+        // Calculate the total patients across approved cases only
+        $totalPatients = $vehicularAccidentsQuery->where('is_approved', 1)->sum('no_of_patients');
+
+        // Retrieve all cases without pagination for printing
+        $allAccidentsForPrint = $vehicularAccidentsQuery->paginate($totalPatients)->appends(['month' => $month, 'year' => $year]);
+
         $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
         return view('vehicular_accidents.index', [
             'vehicularAccidents' => $vehicularAccidents,
+            'allAccidentsForPrint' => $allAccidentsForPrint,
             'months' => $months,
             'totalPatients' => $totalPatients,
         ]);
@@ -228,6 +245,9 @@ class VehicularAccidentsController extends Controller
     {
         $month = $request->input('month');
         $year = $request->input('year');
+        $page = $request->input('page', 1); // Default to the first page
+        $perPage = 5; // Number of items per page
+        $search = $request->input('search'); // Search query
 
         // Fetch detailed cases for the given barangay, month, and year
         $barangayDetails = VehicularAccident::where('barangay', $barangay)
@@ -237,8 +257,14 @@ class VehicularAccidentsController extends Controller
             ->when($year, function ($query) use ($year) {
                 $query->whereYear('date', $year);
             })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('rescue_team', 'like', '%' . $search . '%')
+                        ->orWhere('place_of_incident', 'like', '%' . $search . '%');
+                });
+            })
             ->where('is_approved', 1)
-            ->get(['date', 'rescue_team', 'place_of_incident', 'no_of_patients', 'cause_of_incident', 'vehicles_involved', 'facility_name', 'barangay']);
+            ->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json($barangayDetails);
     }

@@ -71,6 +71,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            <div id="paginationControls"></div>
                         </div>
                     </div>
                     <div class="grid place-items-end pt-5 mt-5 border-t-2 print-hidden">
@@ -123,6 +124,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            <div id="paginationControls"></div>
                         </div>
                     </div>
                     <div class="grid place-items-end pt-5 mt-5 border-t-2 print-hidden">
@@ -174,6 +176,7 @@
                                         @endforeach
                                     </tbody>
                             </table>
+                            <div id="paginationControls"></div>
                         </div>
                     </div>
                     <div class="grid place-items-end pt-5 mt-5 border-t-2 print-hidden">
@@ -262,38 +265,79 @@
                                     medicalReportBlock.classList.add('hidden');
                                     accidentReportBlock.classList.remove('hidden');
                                     totalRespondedReportBlock.classList.add('hidden');
+                                    paginateTable('#accidentReportBlock table'); // Add pagination
                                     accidentReportBlock.scrollIntoView({
                                         behavior: 'smooth',
                                         block: 'start'
-                                    }); // Scroll to Vehicular Accidents
+                                    });
                                 } else if (datasetLabel === 'Medical Cases') {
                                     accidentReportBlock.classList.add('hidden');
                                     medicalReportBlock.classList.remove('hidden');
                                     totalRespondedReportBlock.classList.add('hidden');
+                                    paginateTable('#medicalReportBlock table'); // Add pagination
                                     medicalReportBlock.scrollIntoView({
                                         behavior: 'smooth',
                                         block: 'start'
-                                    }); // Scroll to Medical Cases
+                                    });
                                 } else if (datasetLabel === 'Total Responded') {
                                     medicalReportBlock.classList.add('hidden');
                                     accidentReportBlock.classList.add('hidden');
                                     totalRespondedReportBlock.classList.remove('hidden');
+                                    paginateTable('#totalRespondedReportBlock table'); // Add pagination
                                     totalRespondedReportBlock.scrollIntoView({
                                         behavior: 'smooth',
                                         block: 'start'
-                                    }); // Scroll to Total Responded
+                                    });
                                 }
                             }
                         }
                     });
                 })
                 .catch(error => console.error('Error fetching data:', error));
+
+            // Pagination Function
+            function paginateTable(tableSelector) {
+                const rowsPerPage = 5; // Customize rows per page
+                const table = document.querySelector(tableSelector);
+                const rows = table.querySelectorAll('tbody tr');
+                const totalPages = Math.ceil(rows.length / rowsPerPage);
+                const paginationControls = document.createElement('div');
+                paginationControls.classList.add('pagination-controls');
+
+                table.parentNode.querySelector('.pagination-controls')?.remove(); // Clear previous controls if any
+                table.parentNode.appendChild(paginationControls); // Add new controls
+
+                function displayPage(page) {
+                    rows.forEach((row, index) => {
+                        row.style.display = (index >= (page - 1) * rowsPerPage && index < page * rowsPerPage) ? '' : 'none';
+                    });
+                }
+
+                function createPaginationButtons() {
+                    paginationControls.innerHTML = ''; // Clear existing buttons
+                    for (let i = 1; i <= totalPages; i++) {
+                        const button = document.createElement('button');
+                        button.textContent = i;
+                        button.classList.add('pagination-btn');
+                        button.addEventListener('click', () => {
+                            displayPage(i);
+                            document.querySelectorAll('.pagination-btn').forEach(btn => btn.classList.remove('active'));
+                            button.classList.add('active');
+                        });
+                        paginationControls.appendChild(button);
+                    }
+                }
+
+                createPaginationButtons();
+                displayPage(1); // Show first page by default
+            }
         });
     </script>
 
     <style>
         @media print {
 
+            /* Hide elements not required in print mode */
             nav,
             .header,
             .flex.justify-between,
@@ -302,23 +346,24 @@
             .bg-green-500,
             .bg-yellow-500,
             .bg-red-500,
-            .print-hidden {
+            .print-hidden,
+            .pagination-controls {
                 display: none;
             }
 
+            /* Ensure tables show all rows in print */
             .relative {
                 max-height: none !important;
+                overflow: visible !important;
             }
 
             table {
                 font-size: 15px;
-                /* Reduce the font size for printing */
             }
 
             th,
             td {
                 padding: 4px !important;
-                /* Reduce padding to fit columns */
             }
 
             .print-show {
@@ -336,6 +381,29 @@
                 padding-bottom: 10px;
                 margin-bottom: 0px;
             }
+        }
+
+
+        .pagination-controls {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .pagination-btn {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        .pagination-btn:hover {
+            background-color: #d0d0d0;
+        }
+
+        .pagination-btn.active {
+            background-color: #a0a0a0;
+            color: white;
         }
     </style>
 </x-app-layout>

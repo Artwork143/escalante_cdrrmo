@@ -113,7 +113,7 @@ use Carbon\Carbon;
                                         <td class="px-6 py-4 whitespace-nowrap text-wrap capitalize">{{ $case->place_of_incident }}, Brgy. {{ $case->barangay }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $case->no_of_patients }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-wrap capitalize">{{ $case->chief_complaints }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $case->facility_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $case->facility_name }}</td>
 
                                         @if(auth()->user()->role === 0)
                                         <td class="px-6 py-4 whitespace-nowrap print-hidden">
