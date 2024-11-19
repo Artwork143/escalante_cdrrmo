@@ -105,14 +105,21 @@ use Carbon\Carbon;
                                     @endphp
 
                                     @foreach ($sortedAccidents as $case)
-                                    <tr class="{{ $case->is_approved ? '' : 'bg-yellow-100' }} {{ $case->is_approved ? '' : 'print-hidden' }}">
+                                    <tr class="{{ $case->is_approved ? 'even:bg-gray-50 odd:bg-white hover:bg-gray-200' : 'bg-yellow-100' }} {{ $case->is_approved ? '' : 'print-hidden' }}">
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $loop->iteration }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($case->date)->format('m/d/Y') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $case->rescue_team }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-wrap capitalize">{{ $case->place_of_incident }}, Brgy. {{ $case->barangay }}</td>
                                         <td class="px-3 py-4 whitespace-nowrap">{{ $case->no_of_patients }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-wrap">{{ $case->cause_of_incident }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-wrap">{{ $case->vehicles_involved }}</td>
+
+                                        <!-- Vehicles Involved (with vehicle details) -->
+                                        <td class="px-6 py-4 whitespace-nowrap text-wrap">
+                                            @foreach ($case->vehicleDetails as $vehicleDetail)
+                                            {{ $vehicleDetail->vehicle_type }} ({{ $vehicleDetail->vehicle_detail }})<br>
+                                            @endforeach
+                                        </td>
+
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $case->facility_name }}</td>
 
                                         @if(auth()->user()->role === 0)
@@ -146,6 +153,7 @@ use Carbon\Carbon;
                                     </tr>
                                     @endforeach
                                 </tbody>
+
                             </table>
                         </div>
                     </div>
@@ -287,8 +295,14 @@ use Carbon\Carbon;
                 <div id="paginationControls" class="mt-4 pt-4 flex gap-2 justify-between border-t-2 border-t-gray-400">
                     <!-- Pagination buttons will be dynamically added here -->
                 </div>
+                <div class="grid place-items-end mt-4">
+                    <button
+                        onclick="printBarangayCases()"
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
+                        Print
+                    </button>
+                </div>
             </div>
-
         </div>
     </div>
 
@@ -469,6 +483,110 @@ use Carbon\Carbon;
                     if (highestCaseCount > 1) suggestionBox.classList.remove('hidden');
                 });
         });
+
+        function searchBarangayCases() {
+            // Get the search term from the input field
+            const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+
+            // Get all the rows in the table body
+            const tableBody = document.getElementById('barangayTableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            // Loop through each row and toggle its visibility based on the search term
+            for (let row of rows) {
+                // Get all cells in the current row
+                const cells = row.getElementsByTagName('td');
+
+                // Combine the text content of all cells for search comparison
+                const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+
+                // Check if the row text contains the search term
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = ''; // Show row
+                } else {
+                    row.style.display = 'none'; // Hide row
+                }
+            }
+        }
+
+        //Print function for DetailedBarangay Table only
+        function printBarangayCases() {
+            // Get the table's HTML
+            const table = document.querySelector('#barangayTableBody').parentElement.outerHTML;
+
+            // Create a new window
+            const printWindow = window.open('', '', 'height=600,width=800');
+
+            // Write the necessary HTML to the new window
+            printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print Barangay Cases</title>
+                <style>
+                    /* Add any styles you want for the printed page */
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .header img {
+                        width: 100px;
+                        max-width: 100px;
+                        height: auto;
+                    }
+                    .header p {
+                        margin: 0;
+                        line-height: 1.4;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="{{ asset('images/escaLogo.jpg') }}" alt="Esca Logo">
+                    <div class="mx-4">
+                        <p class="font-bold">
+                            REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
+                        </p>
+                        <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
+                        <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
+                        <p class="text-red-600">09152627121 | 09089376724</p>
+                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo">
+                </div>
+                <h2>Vehicular Accidents Per Barangay</h2>
+                ${table}
+            </body>
+        </html>
+    `);
+
+            // Close the document to ensure all resources are loaded
+            printWindow.document.close();
+
+            // Wait for the content to load before printing
+            printWindow.onload = function() {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            };
+        }
     </script>
 
 

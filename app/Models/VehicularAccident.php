@@ -25,14 +25,27 @@ class VehicularAccident extends Model
         'is_approved',
     ];
 
-
     /**
      * Get all accidents for a specific barangay.
      */
     public static function getAccidentsCountByBarangay($barangay)
     {
         return self::where('barangay', $barangay)
-        ->where('is_approved', 1)
-        ->count();
+            ->where('is_approved', 1)
+            ->count();
+    }
+
+    /**
+     * Define the relationship between VehicularAccident and VehicleDetail.
+     * Each accident can have multiple vehicles.
+     */
+    public function vehicles()
+    {
+        return $this->hasMany(VehicleDetail::class);
+    }
+
+    public function vehicleDetails()
+    {
+        return $this->hasMany(VehicleDetail::class, 'vehicular_accident_id');
     }
 }

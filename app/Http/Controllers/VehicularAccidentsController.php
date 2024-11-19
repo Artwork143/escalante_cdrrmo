@@ -23,9 +23,10 @@ class VehicularAccidentsController extends Controller
         $isAdmin = Auth::user()->role === 0; // Assuming role 0 is admin
 
         // Query to get all vehicular accidents for display in the table
-        $vehicularAccidentsQuery = VehicularAccident::when($month, function ($query, $month) {
-            return $query->whereMonth('date', $month);
-        })
+        $vehicularAccidentsQuery = VehicularAccident::with('vehicleDetails') // Eager load vehicle details
+            ->when($month, function ($query, $month) {
+                return $query->whereMonth('date', $month);
+            })
             ->when($year, function ($query, $year) {
                 return $query->whereYear('date', $year);
             })
@@ -63,6 +64,7 @@ class VehicularAccidentsController extends Controller
         ]);
     }
 
+
     /**
      * Show the form for creating a new vehicular accident.
      */
@@ -93,7 +95,7 @@ class VehicularAccidentsController extends Controller
         $isAdmin = Auth::user()->role === 0;
 
         // Create the vehicular accident record
-        VehicularAccident::create([
+        $accident = VehicularAccident::create([
             'date' => $request->date,
             'rescue_team' => $request->rescue_team,
             'place_of_incident' => $request->place_of_incident,
@@ -105,8 +107,38 @@ class VehicularAccidentsController extends Controller
             'is_approved' => $isAdmin ? 1 : 0, // Automatically approve if admin
         ]);
 
+        // Loop through the vehicles involved and their specific details
+        foreach ($request->vehicles_involved as $vehicle) {
+            $vehicleDetail = null;
+
+            // Depending on the vehicle, get the specific detail from the request
+            if ($vehicle == 'Motorcycle') {
+                $vehicleDetail = $request->input('motorcycle_type');
+            } elseif ($vehicle == 'Car') {
+                $vehicleDetail = $request->input('car_type');
+            } elseif ($vehicle == 'Tricycle') {
+                $vehicleDetail = $request->input('tricycle_type');
+            } elseif ($vehicle == 'Van') {
+                $vehicleDetail = $request->input('van_type');
+            } elseif ($vehicle == 'Bus') {
+                $vehicleDetail = $request->input('bus_type');
+            } elseif ($vehicle == 'Truck') {
+                $vehicleDetail = $request->input('truck_type');
+            }
+
+            // Store each vehicle and its details in the vehicle_details table (or related table)
+            if ($vehicleDetail) {
+                $accident->vehicles()->create([
+                    'vehicle_type' => $vehicle,
+                    'vehicle_detail' => $vehicleDetail,
+                ]);
+            }
+        }
+
         return redirect()->route('vehicular_accidents.index')->with('success', 'Vehicular accident created successfully!');
     }
+
+
 
     /**
      * Approve the specified vehicular accident.

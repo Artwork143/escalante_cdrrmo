@@ -96,18 +96,86 @@
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700">{{ __('Vehicles Involved') }}</label>
                             <div class="mt-2 grid grid-cols-2 gap-4">
-                                @php
-                                $vehicles = ['Motorcycle', 'Car', 'Tricycle', 'Van', 'Bus', 'Truck'];
-                                $selectedVehicles = explode(', ', $vehicularAccident->vehicles_involved);
-                                @endphp
-                                @foreach($vehicles as $vehicle)
+                                <!-- Motorcycle -->
                                 <div>
-                                    <input type="checkbox" name="vehicles_involved[]" value="{{ $vehicle }}" id="vehicle_{{ strtolower($vehicle) }}" class="mr-2" {{ in_array($vehicle, old('vehicles_involved', $selectedVehicles)) ? 'checked' : '' }}>
-                                    <label for="vehicle_{{ strtolower($vehicle) }}">{{ __($vehicle) }}</label>
+                                    <input type="checkbox" name="vehicles_involved[]" value="Motorcycle" id="vehicle_motorcycle" class="mr-2"
+                                        onclick="toggleVehicleInput('motorcycle')"
+                                        {{ in_array('Motorcycle', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? 'checked' : '' }}>
+                                    <label for="vehicle_motorcycle">{{ __('Motorcycle') }}</label>
+                                    <div id="motorcycle_input" class="mt-2 {{ in_array('Motorcycle', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? '' : 'hidden' }}">
+                                        <label for="motorcycle_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Motorcycle') }}</label>
+                                        <input type="text" name="motorcycle_type" id="motorcycle_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            value="{{ old('motorcycle_type', $vehicularAccident->motorcycle_type) }}">
+                                    </div>
                                 </div>
-                                @endforeach
+
+                                <!-- Car -->
+                                <div>
+                                    <input type="checkbox" name="vehicles_involved[]" value="Car" id="vehicle_car" class="mr-2"
+                                        onclick="toggleVehicleInput('car')"
+                                        {{ in_array('Car', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? 'checked' : '' }}>
+                                    <label for="vehicle_car">{{ __('Car') }}</label>
+                                    <div id="car_input" class="mt-2 {{ in_array('Car', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? '' : 'hidden' }}">
+                                        <label for="car_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Car') }}</label>
+                                        <input type="text" name="car_type" id="car_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            value="{{ old('car_type', $vehicularAccident->car_type) }}">
+                                    </div>
+                                </div>
+
+                                <!-- Tricycle -->
+                                <div>
+                                    <input type="checkbox" name="vehicles_involved[]" value="Tricycle" id="vehicle_tricycle" class="mr-2"
+                                        onclick="toggleVehicleInput('tricycle')"
+                                        {{ in_array('Tricycle', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? 'checked' : '' }}>
+                                    <label for="vehicle_tricycle">{{ __('Tricycle') }}</label>
+                                    <div id="tricycle_input" class="mt-2 {{ in_array('Tricycle', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? '' : 'hidden' }}">
+                                        <label for="tricycle_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Tricycle') }}</label>
+                                        <input type="text" name="tricycle_type" id="tricycle_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            value="{{ old('tricycle_type', $vehicularAccident->tricycle_type) }}">
+                                    </div>
+                                </div>
+
+                                <!-- Van -->
+                                <div>
+                                    <input type="checkbox" name="vehicles_involved[]" value="Van" id="vehicle_van" class="mr-2"
+                                        onclick="toggleVehicleInput('van')"
+                                        {{ in_array('Van', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? 'checked' : '' }}>
+                                    <label for="vehicle_van">{{ __('Van') }}</label>
+                                    <div id="van_input" class="mt-2 {{ in_array('Van', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? '' : 'hidden' }}">
+                                        <label for="van_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Van') }}</label>
+                                        <input type="text" name="van_type" id="van_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            value="{{ old('van_type', $vehicularAccident->van_type) }}">
+                                    </div>
+                                </div>
+
+                                <!-- Bus -->
+                                <div>
+                                    <input type="checkbox" name="vehicles_involved[]" value="Bus" id="vehicle_bus" class="mr-2"
+                                        onclick="toggleVehicleInput('bus')"
+                                        {{ in_array('Bus', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? 'checked' : '' }}>
+                                    <label for="vehicle_bus">{{ __('Bus') }}</label>
+                                    <div id="bus_input" class="mt-2 {{ in_array('Bus', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? '' : 'hidden' }}">
+                                        <label for="bus_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Bus') }}</label>
+                                        <input type="text" name="bus_type" id="bus_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            value="{{ old('bus_type', $vehicularAccident->bus_type) }}">
+                                    </div>
+                                </div>
+
+                                <!-- Truck -->
+                                <div>
+                                    <input type="checkbox" name="vehicles_involved[]" value="Truck" id="vehicle_truck" class="mr-2"
+                                        onclick="toggleVehicleInput('truck')"
+                                        {{ in_array('Truck', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? 'checked' : '' }}>
+                                    <label for="vehicle_truck">{{ __('Truck') }}</label>
+                                    <div id="truck_input" class="mt-2 {{ in_array('Truck', old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? '' : 'hidden' }}">
+                                        <label for="truck_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Truck') }}</label>
+                                        <input type="text" name="truck_type" id="truck_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            value="{{ old('truck_type', $vehicularAccident->truck_type) }}">
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
 
                         <!-- Facility Name -->
                         <div class="mb-4">

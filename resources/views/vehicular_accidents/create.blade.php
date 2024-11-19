@@ -97,30 +97,65 @@
                         <!-- Vehicles Involved (Checkboxes) -->
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700">{{ __('Vehicles Involved') }}</label>
-                            <div class="mt-2 grid grid-cols-2 gap-4"> <!-- Added grid layout with 2 columns -->
+                            <div class="mt-2 grid grid-cols-2 gap-4">
+                                <!-- Motorcycle -->
                                 <div>
-                                    <input type="checkbox" name="vehicles_involved[]" value="Motorcycle" id="vehicle_motorcycle" class="mr-2">
+                                    <input type="checkbox" name="vehicles_involved[]" value="Motorcycle" id="vehicle_motorcycle" class="mr-2" onclick="toggleVehicleInput('motorcycle')">
                                     <label for="vehicle_motorcycle">{{ __('Motorcycle') }}</label>
+                                    <div id="motorcycle_input" class="mt-2 hidden">
+                                        <label for="motorcycle_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Motorcycle') }}</label>
+                                        <input type="text" name="motorcycle_type" id="motorcycle_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
                                 </div>
+                                
+                                <!-- Car -->
                                 <div>
-                                    <input type="checkbox" name="vehicles_involved[]" value="Car" id="vehicle_car" class="mr-2">
+                                    <input type="checkbox" name="vehicles_involved[]" value="Car" id="vehicle_car" class="mr-2" onclick="toggleVehicleInput('car')">
                                     <label for="vehicle_car">{{ __('Car') }}</label>
+                                    <div id="car_input" class="mt-2 hidden">
+                                        <label for="car_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Car') }}</label>
+                                        <input type="text" name="car_type" id="car_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
                                 </div>
+                                
+                                <!-- Tricycle -->
                                 <div>
-                                    <input type="checkbox" name="vehicles_involved[]" value="Tricycle" id="vehicle_tricycle" class="mr-2">
+                                    <input type="checkbox" name="vehicles_involved[]" value="Tricycle" id="vehicle_tricycle" class="mr-2" onclick="toggleVehicleInput('tricycle')">
                                     <label for="vehicle_tricycle">{{ __('Tricycle') }}</label>
+                                    <div id="tricycle_input" class="mt-2 hidden">
+                                        <label for="tricycle_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Tricycle') }}</label>
+                                        <input type="text" name="tricycle_type" id="tricycle_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
                                 </div>
+                                
+                                <!-- Van -->
                                 <div>
-                                    <input type="checkbox" name="vehicles_involved[]" value="Van" id="vehicle_van" class="mr-2">
+                                    <input type="checkbox" name="vehicles_involved[]" value="Van" id="vehicle_van" class="mr-2" onclick="toggleVehicleInput('van')">
                                     <label for="vehicle_van">{{ __('Van') }}</label>
+                                    <div id="van_input" class="mt-2 hidden">
+                                        <label for="van_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Van') }}</label>
+                                        <input type="text" name="van_type" id="van_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
                                 </div>
+                                
+                                <!-- Bus -->
                                 <div>
-                                    <input type="checkbox" name="vehicles_involved[]" value="Bus" id="vehicle_bus" class="mr-2">
+                                    <input type="checkbox" name="vehicles_involved[]" value="Bus" id="vehicle_bus" class="mr-2" onclick="toggleVehicleInput('bus')">
                                     <label for="vehicle_bus">{{ __('Bus') }}</label>
+                                    <div id="bus_input" class="mt-2 hidden">
+                                        <label for="bus_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Bus') }}</label>
+                                        <input type="text" name="bus_type" id="bus_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
                                 </div>
+                                
+                                <!-- Truck -->
                                 <div>
-                                    <input type="checkbox" name="vehicles_involved[]" value="Truck" id="vehicle_truck" class="mr-2">
+                                    <input type="checkbox" name="vehicles_involved[]" value="Truck" id="vehicle_truck" class="mr-2" onclick="toggleVehicleInput('truck')">
                                     <label for="vehicle_truck">{{ __('Truck') }}</label>
+                                    <div id="truck_input" class="mt-2 hidden">
+                                        <label for="truck_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Truck') }}</label>
+                                        <input type="text" name="truck_type" id="truck_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -145,4 +180,17 @@
             </div>
         </div>
     </div>
+    <script>
+        function toggleVehicleInput(vehicle) {
+            const vehicleInput = document.getElementById(vehicle + '_input');
+            const vehicleCheckbox = document.getElementById('vehicle_' + vehicle);
+
+            // Toggle visibility of the input field based on checkbox state
+            if (vehicleCheckbox.checked) {
+                vehicleInput.classList.remove('hidden');
+            } else {
+                vehicleInput.classList.add('hidden');
+            }
+        }
+    </script>
 </x-app-layout>

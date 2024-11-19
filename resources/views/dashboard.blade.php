@@ -98,14 +98,14 @@ use Carbon\Carbon;
 
     <!-- Modal -->
     <div id="barangayModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
-    <div id="modalContent" class="bg-white rounded-lg p-6 w-[430px] shadow-lg relative z-50 animate-bounce-in">
-        <button onclick="closeModal()" class="bg-red-400 px-2 py-1 hover:scale-90 transition duration-150 hover:bg-red-800 text-white rounded absolute top-2 right-2">
-            <i class="fa fa-times-circle" aria-hidden="true"></i>
-        </button>
-        <h2 id="modalBarangayName" class="text-xl font-semibold mb-4"></h2>
-        <p id="modalDetails" class="text-gray-700 mb-4">Details will be shown here.</p>
+        <div id="modalContent" class="bg-white rounded-lg p-6 w-[430px] shadow-lg relative z-50 animate-bounce-in">
+            <button onclick="closeModal()" class="bg-red-400 px-2 py-1 hover:scale-90 transition duration-150 hover:bg-red-800 text-white rounded absolute top-2 right-2">
+                <i class="fa fa-times-circle" aria-hidden="true"></i>
+            </button>
+            <h2 id="modalBarangayName" class="text-xl font-semibold mb-4"></h2>
+            <p id="modalDetails" class="text-gray-700 mb-4">Details will be shown here.</p>
+        </div>
     </div>
-</div>
 
 </x-app-layout>
 
@@ -215,7 +215,7 @@ use Carbon\Carbon;
         const modalContent = document.getElementById('modalContent');
         modalContent.classList.remove('animate-bounce-in');
         modalContent.classList.add('animate-bounce-out');
-        
+
         // Hide modal after closing animation
         modalContent.addEventListener('animationend', function handleAnimationEnd() {
             document.getElementById('barangayModal').style.display = 'none';
@@ -232,16 +232,21 @@ use Carbon\Carbon;
 
     /* Define keyframes for modal animations */
     @keyframes bounce-in {
-        0%, 100% {
+
+        0%,
+        100% {
             transform: scale(1);
             opacity: 1;
         }
+
         30% {
             transform: scale(1.1);
         }
+
         50% {
             transform: scale(0.9);
         }
+
         70% {
             transform: scale(1.05);
         }
@@ -252,6 +257,7 @@ use Carbon\Carbon;
             transform: scale(1);
             opacity: 1;
         }
+
         100% {
             transform: scale(0.9);
             opacity: 0;

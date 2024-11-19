@@ -71,10 +71,10 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            <div id="paginationControls"></div>
                         </div>
                     </div>
                     <div class="grid place-items-end pt-5 mt-5 border-t-2 print-hidden">
+                        <div id="paginationControls"></div>
                         <button onclick="window.print()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700">
                             {{ __('Print') }}
                         </button>
@@ -124,10 +124,10 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            <div id="paginationControls"></div>
                         </div>
                     </div>
                     <div class="grid place-items-end pt-5 mt-5 border-t-2 print-hidden">
+                        <div id="paginationControls"></div>
                         <button onclick="window.print()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700">
                             {{ __('Print') }}
                         </button>
@@ -260,35 +260,37 @@
                                 const accidentReportBlock = document.getElementById('accidentReportBlock');
                                 const totalRespondedReportBlock = document.getElementById('totalRespondedReportBlock');
 
-                                // Hide/Show blocks based on dataset
+                                // Ensure pagination is initialized only once for each block
+                                let blockToDisplay;
+                                let paginateSelector;
+
                                 if (datasetLabel === 'Vehicular Accidents') {
-                                    medicalReportBlock.classList.add('hidden');
-                                    accidentReportBlock.classList.remove('hidden');
-                                    totalRespondedReportBlock.classList.add('hidden');
-                                    paginateTable('#accidentReportBlock table'); // Add pagination
-                                    accidentReportBlock.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'start'
-                                    });
+                                    blockToDisplay = accidentReportBlock;
+                                    paginateSelector = '#accidentReportBlock table';
                                 } else if (datasetLabel === 'Medical Cases') {
-                                    accidentReportBlock.classList.add('hidden');
-                                    medicalReportBlock.classList.remove('hidden');
-                                    totalRespondedReportBlock.classList.add('hidden');
-                                    paginateTable('#medicalReportBlock table'); // Add pagination
-                                    medicalReportBlock.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'start'
-                                    });
+                                    blockToDisplay = medicalReportBlock;
+                                    paginateSelector = '#medicalReportBlock table';
                                 } else if (datasetLabel === 'Total Responded') {
-                                    medicalReportBlock.classList.add('hidden');
-                                    accidentReportBlock.classList.add('hidden');
-                                    totalRespondedReportBlock.classList.remove('hidden');
-                                    paginateTable('#totalRespondedReportBlock table'); // Add pagination
-                                    totalRespondedReportBlock.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'start'
-                                    });
+                                    blockToDisplay = totalRespondedReportBlock;
+                                    paginateSelector = '#totalRespondedReportBlock table';
                                 }
+
+                                // Hide all blocks first
+                                [medicalReportBlock, accidentReportBlock, totalRespondedReportBlock].forEach(block => {
+                                    block.classList.add('hidden');
+                                });
+
+                                // Show the selected block
+                                blockToDisplay.classList.remove('hidden');
+
+                                // Initialize pagination only for the active block
+                                paginateTable(paginateSelector);
+
+                                // Scroll into view
+                                blockToDisplay.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
                             }
                         }
                     });
@@ -303,38 +305,135 @@
                 const totalPages = Math.ceil(rows.length / rowsPerPage);
                 const paginationControls = document.createElement('div');
                 paginationControls.classList.add('pagination-controls');
+                const resultsInfo = document.createElement('div');
+                resultsInfo.classList.add('results-info');
+                const paginationWrapper = document.createElement('div');
+                paginationWrapper.classList.add('pagination-wrapper'); // Wrapper for pagination and results info
 
-                table.parentNode.querySelector('.pagination-controls')?.remove(); // Clear previous controls if any
-                table.parentNode.appendChild(paginationControls); // Add new controls
+                // Avoid re-adding pagination controls if already present
+                if (table.parentNode.querySelector('.pagination-controls')) {
+                    return; // Exit if pagination controls are already initialized
+                }
+
+                table.parentNode.appendChild(paginationWrapper); // Add new wrapper
+                paginationWrapper.appendChild(paginationControls); // Append pagination controls to wrapper
+                paginationWrapper.appendChild(resultsInfo); // Append results info to wrapper
+
+                let currentPage = 1; // Start on the first page
+
+                function updateResultsInfo(page) {
+                    const start = (page - 1) * rowsPerPage + 1;
+                    const end = Math.min(page * rowsPerPage, rows.length);
+                    resultsInfo.textContent = `Showing ${start} to ${end} of ${rows.length} results`;
+                }
 
                 function displayPage(page) {
+                    currentPage = page;
                     rows.forEach((row, index) => {
                         row.style.display = (index >= (page - 1) * rowsPerPage && index < page * rowsPerPage) ? '' : 'none';
                     });
+                    updateResultsInfo(page); // Update results info
+                    updatePaginationButtons(); // Update the active state of pagination buttons
                 }
 
                 function createPaginationButtons() {
                     paginationControls.innerHTML = ''; // Clear existing buttons
+
+                    // Create Previous Button
+                    const prevButton = document.createElement('button');
+                    prevButton.textContent = '<';
+                    prevButton.classList.add('pagination-btn');
+                    prevButton.addEventListener('click', () => {
+                        if (currentPage > 1) {
+                            displayPage(currentPage - 1);
+                        }
+                    });
+                    paginationControls.appendChild(prevButton);
+
+                    // Create page number buttons
                     for (let i = 1; i <= totalPages; i++) {
                         const button = document.createElement('button');
                         button.textContent = i;
                         button.classList.add('pagination-btn');
+                        if (i === currentPage) button.classList.add('active'); // Highlight active page
+
                         button.addEventListener('click', () => {
                             displayPage(i);
-                            document.querySelectorAll('.pagination-btn').forEach(btn => btn.classList.remove('active'));
-                            button.classList.add('active');
                         });
+
                         paginationControls.appendChild(button);
                     }
+
+                    // Create Next Button
+                    const nextButton = document.createElement('button');
+                    nextButton.textContent = '>';
+                    nextButton.classList.add('pagination-btn');
+                    nextButton.disabled = currentPage === totalPages; // Disable on last page
+                    nextButton.addEventListener('click', () => {
+                        if (currentPage < totalPages) {
+                            displayPage(currentPage + 1);
+                        }
+                    });
+                    paginationControls.appendChild(nextButton);
+                }
+
+                function updatePaginationButtons() {
+                    const buttons = paginationControls.querySelectorAll('button');
+                    buttons.forEach(button => {
+                        if (button.textContent === 'Previous') {
+                            button.disabled = currentPage === 1;
+                        } else if (button.textContent === 'Next') {
+                            button.disabled = currentPage === totalPages;
+                        } else {
+                            button.classList.toggle('active', parseInt(button.textContent) === currentPage);
+                        }
+                    });
                 }
 
                 createPaginationButtons();
-                displayPage(1); // Show first page by default
+                displayPage(currentPage); // Show first page by default
             }
         });
     </script>
 
+
     <style>
+        
+
+
+        .pagination-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-direction: row-reverse;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+
+        .pagination-btn.active {
+            background-color: #f0f0f0;
+            border: 2px solid #EB8317;
+            color: black;
+        }
+
+        .results-info {
+            font-size: 1rem;
+            color: #333;
+        }
+        
         @media print {
 
             /* Hide elements not required in print mode */
@@ -347,7 +446,7 @@
             .bg-yellow-500,
             .bg-red-500,
             .print-hidden,
-            .pagination-controls {
+            .pagination-wrapper {
                 display: none;
             }
 
@@ -381,29 +480,6 @@
                 padding-bottom: 10px;
                 margin-bottom: 0px;
             }
-        }
-
-
-        .pagination-controls {
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .pagination-btn {
-            margin: 0 5px;
-            padding: 5px 10px;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            cursor: pointer;
-        }
-
-        .pagination-btn:hover {
-            background-color: #d0d0d0;
-        }
-
-        .pagination-btn.active {
-            background-color: #a0a0a0;
-            color: white;
         }
     </style>
 </x-app-layout>

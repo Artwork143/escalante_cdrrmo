@@ -261,7 +261,7 @@ use Carbon\Carbon;
 
             <!-- Detailed Table Section: Initially hidden -->
             <div id="barangayDetails" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10 print-hidden">
-                
+
                 <div class="mb-4 flex justify-between">
                     <h3 id="barangayTitle" class="text-lg font-semibold mb-4 mt-2"></h3>
                     <input
@@ -290,6 +290,14 @@ use Carbon\Carbon;
                 <!-- Pagination controls -->
                 <div id="paginationControls" class="mt-4 pt-4 flex gap-2 justify-between border-t-2 border-t-gray-400">
                     <!-- Pagination buttons will be dynamically added here -->
+                </div>
+
+                <div class="grid place-items-end mt-4">
+                <button
+                    onclick="printBarangayCases()"
+                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Print
+                </button>
                 </div>
             </div>
 
@@ -384,7 +392,6 @@ use Carbon\Carbon;
                     }
 
                     // Attach renderPaginationControls to the window object for global access
-                    // Attach renderPaginationControls to the window object for global access
                     window.renderPaginationControls = function(data, barangay) {
                         const paginationContainer = document.getElementById('paginationControls');
                         paginationContainer.innerHTML = '';
@@ -415,7 +422,7 @@ use Carbon\Carbon;
                             const pageButton = document.createElement('button');
                             pageButton.classList.add('px-3', 'py-1', 'border', 'hover:bg-gray-100');
                             if (i === data.current_page) {
-                                pageButton.classList.add('bg-gray-300'); // Current page styling
+                                pageButton.classList.add('border-2', 'border-[#EB8317]'); // Current page styling
                             }
                             pageButton.textContent = i;
                             pageButton.onclick = () => loadBarangayDetails(barangay, i);
@@ -486,6 +493,111 @@ use Carbon\Carbon;
                     }
                 });
         });
+
+        function searchBarangayCases() {
+            // Get the search term from the input field
+            const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+
+            // Get all the rows in the table body
+            const tableBody = document.getElementById('barangayTableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            // Loop through each row and toggle its visibility based on the search term
+            for (let row of rows) {
+                // Get all cells in the current row
+                const cells = row.getElementsByTagName('td');
+
+                // Combine the text content of all cells for search comparison
+                const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+
+                // Check if the row text contains the search term
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = ''; // Show row
+                } else {
+                    row.style.display = 'none'; // Hide row
+                }
+            }
+        }
+
+
+        //Print function for DetailedBarangay Table only
+        function printBarangayCases() {
+            // Get the table's HTML
+            const table = document.querySelector('#barangayTableBody').parentElement.outerHTML;
+
+            // Create a new window
+            const printWindow = window.open('', '', 'height=600,width=800');
+
+            // Write the necessary HTML to the new window
+            printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print Barangay Cases</title>
+                <style>
+                    /* Add any styles you want for the printed page */
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .header img {
+                        width: 100px;
+                        max-width: 100px;
+                        height: auto;
+                    }
+                    .header p {
+                        margin: 0;
+                        line-height: 1.4;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="{{ asset('images/escaLogo.jpg') }}" alt="Esca Logo">
+                    <div class="mx-4">
+                        <p class="font-bold">
+                            REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
+                        </p>
+                        <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
+                        <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
+                        <p class="text-red-600">09152627121 | 09089376724</p>
+                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo">
+                </div>
+                <h2>Medical Cases Per Barangay</h2>
+                ${table}
+            </body>
+        </html>
+    `);
+
+            // Close the document to ensure all resources are loaded
+            printWindow.document.close();
+
+            // Wait for the content to load before printing
+            printWindow.onload = function() {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            };
+        }
     </script>
 
 
