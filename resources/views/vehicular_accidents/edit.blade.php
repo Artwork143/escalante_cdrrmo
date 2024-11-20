@@ -27,9 +27,9 @@
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                                 <option value=""></option>
                                 @foreach(['Alpha', 'Bravo', 'Charlie'] as $team)
-                                    <option value="{{ $team }}" {{ old('rescue_team', $vehicularAccident->rescue_team) == $team ? 'selected' : '' }}>
-                                        {{ $team }}
-                                    </option>
+                                <option value="{{ $team }}" {{ old('rescue_team', $vehicularAccident->rescue_team) == $team ? 'selected' : '' }}>
+                                    {{ $team }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
@@ -41,14 +41,14 @@
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                                 <option value=""></option>
                                 @foreach([
-                                    'Alimango', 'Balintawak', 'Binaguiohan', 'Buenavista', 'Cervantes',
-                                    'Dian-ay', 'Hacienda Fe', 'Japitan', 'Jonob-jonob', 'Langub',
-                                    'Libertad', 'Mabini', 'Magsaysay', 'Malasibog', 'Old Poblacion',
-                                    'Paitan', 'Pinagpugasan', 'Rizal', 'Tamlang', 'Udtongan', 'Washington'
+                                'Alimango', 'Balintawak', 'Binaguiohan', 'Buenavista', 'Cervantes',
+                                'Dian-ay', 'Hacienda Fe', 'Japitan', 'Jonob-jonob', 'Langub',
+                                'Libertad', 'Mabini', 'Magsaysay', 'Malasibog', 'Old Poblacion',
+                                'Paitan', 'Pinagpugasan', 'Rizal', 'Tamlang', 'Udtongan', 'Washington'
                                 ] as $barangay)
-                                    <option value="{{ $barangay }}" {{ old('barangay', $vehicularAccident->barangay) == $barangay ? 'selected' : '' }}>
-                                        {{ $barangay }}
-                                    </option>
+                                <option value="{{ $barangay }}" {{ old('barangay', $vehicularAccident->barangay) == $barangay ? 'selected' : '' }}>
+                                    {{ $barangay }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
@@ -76,14 +76,14 @@
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                                 <option value=""></option>
                                 @foreach([
-                                    'Over Speeding', 'Mechanical Failure', 'Collision', 'Hit & Run', 'Road Condition',
-                                    'Drunk Driving', 'Distracted Driving', 'Weather Conditions', 'Reckless Driving',
-                                    'Overloading', 'Improper Turning', 'Pedestrian Error', 'Fatigue', 'Road Hazards',
-                                    'Lack of Signage', 'Other'
+                                'Over Speeding', 'Mechanical Failure', 'Collision', 'Hit & Run', 'Road Condition',
+                                'Drunk Driving', 'Distracted Driving', 'Weather Conditions', 'Reckless Driving',
+                                'Overloading', 'Improper Turning', 'Pedestrian Error', 'Fatigue', 'Road Hazards',
+                                'Lack of Signage', 'Other'
                                 ] as $cause)
-                                    <option value="{{ $cause }}" {{ old('cause_of_incident', $vehicularAccident->cause_of_incident) == $cause ? 'selected' : '' }}>
-                                        {{ $cause }}
-                                    </option>
+                                <option value="{{ $cause }}" {{ old('cause_of_incident', $vehicularAccident->cause_of_incident) == $cause ? 'selected' : '' }}>
+                                    {{ $cause }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
@@ -93,22 +93,32 @@
                             <label class="block text-sm font-medium text-gray-700">{{ __('Vehicles Involved') }}</label>
                             <div class="mt-2 grid grid-cols-2 gap-4">
                                 @php
-                                    $vehicles = ['Motorcycle', 'Car', 'Tricycle', 'Van', 'Bus', 'Truck'];
+                                $vehicles = ['Motorcycle', 'Car', 'Tricycle', 'Van', 'Bus', 'Truck'];
                                 @endphp
                                 @foreach($vehicles as $vehicle)
-                                    <div>
-                                        <input type="checkbox" name="vehicles_involved[]" value="{{ $vehicle }}" id="vehicle_{{ strtolower($vehicle) }}" class="mr-2"
-                                            onclick="toggleVehicleInput('{{ strtolower($vehicle) }}')"
-                                            {{ in_array($vehicle, old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? 'checked' : '' }}>
-                                        <label for="vehicle_{{ strtolower($vehicle) }}">{{ $vehicle }}</label>
-                                        <div id="{{ strtolower($vehicle) }}_input"
-                                            class="mt-2 {{ in_array($vehicle, old('vehicles_involved', explode(', ', $vehicularAccident->vehicles_involved))) ? '' : 'hidden' }}">
-                                            <label for="{{ strtolower($vehicle) }}_type" class="block text-sm font-medium text-gray-700">{{ __('Specific ' . $vehicle) }}</label>
-                                            <input type="text" name="{{ strtolower($vehicle) }}_type" id="{{ strtolower($vehicle) }}_type"
-                                                value="{{ old(strtolower($vehicle) . '_type', $vehicularAccident->{strtolower($vehicle) . '_type'}) }}"
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                        </div>
+                                <div>
+                                    <input
+                                        type="checkbox"
+                                        name="vehicles_involved[]"
+                                        value="{{ $vehicle }}"
+                                        id="vehicle_{{ strtolower($vehicle) }}"
+                                        class="mr-2"
+                                        onclick="toggleVehicleInput('{{ strtolower($vehicle) }}')"
+                                        {{ in_array($vehicle, old('vehicles_involved', $vehicularAccident->vehicleDetails->pluck('vehicle_type')->toArray())) ? 'checked' : '' }}>
+                                    <label for="vehicle_{{ strtolower($vehicle) }}">{{ $vehicle }}</label>
+
+                                    <!-- Specific Vehicle Input -->
+                                    <div id="{{ strtolower($vehicle) }}_input"
+                                        class="mt-2 {{ in_array($vehicle, old('vehicles_involved', $vehicularAccident->vehicleDetails->pluck('vehicle_type')->toArray())) ? '' : 'hidden' }}">
+                                        <label for="{{ strtolower($vehicle) }}_type" class="block text-sm font-medium text-gray-700">{{ __('Specific ' . $vehicle) }}</label>
+                                        <input
+                                            type="text"
+                                            name="{{ strtolower($vehicle) }}_type"
+                                            id="{{ strtolower($vehicle) }}_type"
+                                            value="{{ old(strtolower($vehicle) . '_type', $vehicleDetails[$vehicle] ?? '') }}"
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
+                                </div>
                                 @endforeach
                             </div>
                         </div>
@@ -138,20 +148,45 @@
 
     <!-- JavaScript for dynamic toggling -->
     <script>
-        function toggleVehicleInput(vehicle) {
-            const inputContainer = document.getElementById(`${vehicle}_input`);
-            const checkbox = document.getElementById(`vehicle_${vehicle}`);
+    /**
+     * Toggles the visibility of the specific vehicle input field 
+     * based on the checkbox state.
+     * @param {string} vehicle - The lowercase identifier of the vehicle type.
+     */
+    function toggleVehicleInput(vehicle) {
+        const inputContainer = document.getElementById(`${vehicle}_input`);
+        const checkbox = document.getElementById(`vehicle_${vehicle}`);
+
+        if (checkbox && inputContainer) {
             if (checkbox.checked) {
                 inputContainer.classList.remove('hidden');
             } else {
                 inputContainer.classList.add('hidden');
             }
         }
+    }
 
-        // Initialize visibility on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            const vehicles = ['motorcycle', 'car', 'tricycle', 'van', 'bus', 'truck'];
-            vehicles.forEach(vehicle => toggleVehicleInput(vehicle));
+    /**
+     * Initializes the visibility of all specific vehicle input fields
+     * on page load.
+     */
+    document.addEventListener('DOMContentLoaded', function () {
+        const vehicles = ['motorcycle', 'car', 'tricycle', 'van', 'bus', 'truck'];
+
+        vehicles.forEach(vehicle => {
+            toggleVehicleInput(vehicle);
         });
-    </script>
+
+        // Optionally, add a listener for dynamically added checkboxes (if necessary)
+        vehicles.forEach(vehicle => {
+            const checkbox = document.getElementById(`vehicle_${vehicle}`);
+            if (checkbox) {
+                checkbox.addEventListener('change', function () {
+                    toggleVehicleInput(vehicle);
+                });
+            }
+        });
+    });
+</script>
+
 </x-app-layout>

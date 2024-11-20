@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\VehicleDetail;
 use Illuminate\Http\Request;
 use App\Models\VehicularAccident;
 use Illuminate\Support\Facades\Auth;
@@ -86,6 +87,7 @@ class VehicularAccidentsController extends Controller
             'barangay' => 'required|string',
             'no_of_patients' => 'required|integer',
             'cause_of_incident' => 'required|string',
+            'other_cause' => 'nullable|string', // Validate "Other" input as optional
             'vehicles_involved' => 'required|array',  // Ensure vehicles_involved is an array
             'vehicles_involved.*' => 'string',  // Each vehicle must be a string
             'facility_name' => 'required|string',
@@ -94,6 +96,11 @@ class VehicularAccidentsController extends Controller
         // Check if the user is an admin
         $isAdmin = Auth::user()->role === 0;
 
+        // Determine the cause of incident
+        $causeOfIncident = $request->cause_of_incident === 'Other'
+            ? $request->other_cause // Use the "Other" input value if "Other" is selected
+            : $request->cause_of_incident;
+
         // Create the vehicular accident record
         $accident = VehicularAccident::create([
             'date' => $request->date,
@@ -101,7 +108,7 @@ class VehicularAccidentsController extends Controller
             'place_of_incident' => $request->place_of_incident,
             'barangay' => $request->barangay,
             'no_of_patients' => $request->no_of_patients,
-            'cause_of_incident' => $request->cause_of_incident,
+            'cause_of_incident' => $causeOfIncident, // Save the appropriate cause
             'vehicles_involved' => implode(', ', $request->vehicles_involved), // Convert array to string
             'facility_name' => $request->facility_name,
             'is_approved' => $isAdmin ? 1 : 0, // Automatically approve if admin
@@ -140,6 +147,7 @@ class VehicularAccidentsController extends Controller
 
 
 
+
     /**
      * Approve the specified vehicular accident.
      */
@@ -156,10 +164,14 @@ class VehicularAccidentsController extends Controller
      */
     public function edit($id)
     {
-        $vehicularAccident = VehicularAccident::findOrFail($id);
+        $vehicularAccident = VehicularAccident::with('vehicleDetails')->findOrFail($id);
 
-        return view('vehicular_accidents.edit', compact('vehicularAccident'));
+        // Prepare vehicle details as a key-value pair for easier access in the form
+        $vehicleDetails = $vehicularAccident->vehicleDetails->pluck('vehicle_detail', 'vehicle_type')->toArray();
+
+        return view('vehicular_accidents.edit', compact('vehicularAccident', 'vehicleDetails'));
     }
+
 
     /**
      * Update the specified vehicular accident in storage.
@@ -177,10 +189,20 @@ class VehicularAccidentsController extends Controller
             'vehicles_involved' => 'required|array',
             'vehicles_involved.*' => 'string',
             'facility_name' => 'required|string',
+
+            // Add validations for specific vehicle inputs
+            'motorcycle_type' => 'nullable|string',
+            'car_type' => 'nullable|string',
+            'tricycle_type' => 'nullable|string',
+            'van_type' => 'nullable|string',
+            'bus_type' => 'nullable|string',
+            'truck_type' => 'nullable|string',
         ]);
 
-        // Update the vehicular accident
+        // Find the vehicular accident record
         $vehicularAccident = VehicularAccident::findOrFail($id);
+
+        // Update the main vehicular accident record
         $vehicularAccident->update([
             'date' => $request->date,
             'rescue_team' => $request->rescue_team,
@@ -188,12 +210,29 @@ class VehicularAccidentsController extends Controller
             'barangay' => $request->barangay,
             'no_of_patients' => $request->no_of_patients,
             'cause_of_incident' => $request->cause_of_incident,
-            'vehicles_involved' => implode(', ', $request->vehicles_involved),
             'facility_name' => $request->facility_name,
         ]);
 
+        // Update vehicle details
+        // Delete old vehicle details related to this accident
+        VehicleDetail::where('vehicular_accident_id', $vehicularAccident->id)->delete();
+
+        // Add the new vehicle details
+        foreach ($request->vehicles_involved as $vehicle) {
+            $specificInputKey = strtolower($vehicle) . '_type'; // e.g., 'motorcycle_type'
+            $specificDetail = $request->input($specificInputKey, null); // Get specific input or null
+
+            VehicleDetail::create([
+                'vehicular_accident_id' => $vehicularAccident->id,
+                'vehicle_type' => $vehicle,
+                'vehicle_detail' => $specificDetail,
+            ]);
+        }
+
         return redirect()->route('vehicular_accidents.index')->with('success', 'Vehicular accident updated successfully!');
     }
+
+
 
     /**
      * Remove the specified vehicular accident from storage.
@@ -282,7 +321,8 @@ class VehicularAccidentsController extends Controller
         $search = $request->input('search'); // Search query
 
         // Fetch detailed cases for the given barangay, month, and year
-        $barangayDetails = VehicularAccident::where('barangay', $barangay)
+        $barangayDetails = VehicularAccident::with(['vehicles']) // Load related vehicles
+            ->where('barangay', $barangay)
             ->when($month, function ($query) use ($month) {
                 $query->whereMonth('date', $month);
             })
@@ -297,6 +337,14 @@ class VehicularAccidentsController extends Controller
             })
             ->where('is_approved', 1)
             ->paginate($perPage, ['*'], 'page', $page);
+
+        // Transform the data to include formatted vehicles_involved
+        $barangayDetails->getCollection()->transform(function ($accident) {
+            $accident->vehicles_involved = $accident->vehicles->map(function ($vehicle) {
+                return "{$vehicle->vehicle_type} ({$vehicle->vehicle_detail})";
+            })->join(', ');
+            return $accident;
+        });
 
         return response()->json($barangayDetails);
     }

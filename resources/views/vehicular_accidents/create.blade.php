@@ -71,6 +71,7 @@
                         </div>
 
                         <!-- Cause of Incident (Dropdown) -->
+                        <!-- Cause of Incident (Dropdown with "Other" Input) -->
                         <div class="mb-4">
                             <label for="cause_of_incident" class="block text-sm font-medium text-gray-700">{{ __('Cause of Incident') }}</label>
                             <select name="cause_of_incident" id="cause_of_incident" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
@@ -94,6 +95,12 @@
                             </select>
                         </div>
 
+                        <!-- Other Cause of Incident Input -->
+                        <div id="other_cause_input" class="mb-4 hidden">
+                            <label for="other_cause" class="block text-sm font-medium text-gray-700">{{ __('Please specify') }}</label>
+                            <input type="text" name="other_cause" id="other_cause" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+
                         <!-- Vehicles Involved (Checkboxes) -->
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700">{{ __('Vehicles Involved') }}</label>
@@ -107,7 +114,7 @@
                                         <input type="text" name="motorcycle_type" id="motorcycle_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
                                 </div>
-                                
+
                                 <!-- Car -->
                                 <div>
                                     <input type="checkbox" name="vehicles_involved[]" value="Car" id="vehicle_car" class="mr-2" onclick="toggleVehicleInput('car')">
@@ -117,7 +124,7 @@
                                         <input type="text" name="car_type" id="car_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
                                 </div>
-                                
+
                                 <!-- Tricycle -->
                                 <div>
                                     <input type="checkbox" name="vehicles_involved[]" value="Tricycle" id="vehicle_tricycle" class="mr-2" onclick="toggleVehicleInput('tricycle')">
@@ -127,7 +134,7 @@
                                         <input type="text" name="tricycle_type" id="tricycle_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
                                 </div>
-                                
+
                                 <!-- Van -->
                                 <div>
                                     <input type="checkbox" name="vehicles_involved[]" value="Van" id="vehicle_van" class="mr-2" onclick="toggleVehicleInput('van')">
@@ -137,7 +144,7 @@
                                         <input type="text" name="van_type" id="van_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
                                 </div>
-                                
+
                                 <!-- Bus -->
                                 <div>
                                     <input type="checkbox" name="vehicles_involved[]" value="Bus" id="vehicle_bus" class="mr-2" onclick="toggleVehicleInput('bus')">
@@ -147,7 +154,7 @@
                                         <input type="text" name="bus_type" id="bus_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
                                 </div>
-                                
+
                                 <!-- Truck -->
                                 <div>
                                     <input type="checkbox" name="vehicles_involved[]" value="Truck" id="vehicle_truck" class="mr-2" onclick="toggleVehicleInput('truck')">
@@ -192,5 +199,19 @@
                 vehicleInput.classList.add('hidden');
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const causeOfIncidentSelect = document.getElementById('cause_of_incident');
+            const otherCauseInput = document.getElementById('other_cause_input');
+
+            // Toggle visibility of the "Other" input based on selection
+            causeOfIncidentSelect.addEventListener('change', function() {
+                if (this.value === 'Other') {
+                    otherCauseInput.classList.remove('hidden');
+                } else {
+                    otherCauseInput.classList.add('hidden');
+                }
+            });
+        });
     </script>
 </x-app-layout>
