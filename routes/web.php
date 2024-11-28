@@ -140,4 +140,30 @@ Route::get('/get-barangay-accidents/{barangay}', [VehicularAccidentsController::
 Route::get('/yearly-medicals', [MedicalCasesController::class, 'getYearlyMedicals']);
 
 
+// API route to get barangays with cases for the current month
+Route::get('/api/cases/summary', function (Request $request) {
+    $month = $request->query('month', Carbon::now()->month); // Default to the current month if not provided
+
+    // Fetch barangays with vehicular accidents for the given month
+    $accidentBarangays = VehicularAccident::where('is_approved', 1)
+        ->whereMonth('date', $month)
+        ->distinct()
+        ->pluck('barangay');
+
+    // Fetch barangays with medical cases for the given month
+    $medicalBarangays = MedicalCase::where('is_approved', 1)
+        ->whereMonth('date', $month)
+        ->distinct()
+        ->pluck('barangay');
+
+    // Combine both lists and remove duplicates
+    $barangaysWithCases = $accidentBarangays->merge($medicalBarangays)->unique();
+
+    return response()->json([
+        'month' => $month,
+        'barangays' => $barangaysWithCases,
+    ]);
+});
+
+
 require __DIR__ . '/auth.php';

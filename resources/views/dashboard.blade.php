@@ -121,6 +121,25 @@ use Carbon\Carbon;
         keyboard: false
     }).setView([10.1234, 122.1234], 12);
 
+    // Data cache to store fetched data for barangays with cases
+    var barangayDataCache = {};
+    var barangaysWithCases = [];
+
+    // Fetch barangays with cases for the current month
+    fetch(`/api/cases/summary?month=${new Date().getMonth() + 1}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch barangay case summary.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            barangaysWithCases = data.barangays || []; // Assuming API returns an array of barangay names
+        })
+        .catch(error => {
+            console.error('Error fetching case summary:', error);
+        });
+
     // Load GeoJSON data
     fetch('/geojson/Escalante.geojson')
         .then(response => {
@@ -138,33 +157,47 @@ use Carbon\Carbon;
                 },
                 onEachFeature: function(feature, layer) {
                     if (feature.properties && feature.properties.barangay) {
+                        const barangayName = feature.properties.barangay;
+
                         // Bind tooltip with barangay name
-                        layer.bindTooltip(feature.properties.barangay, {
+                        layer.bindTooltip(barangayName, {
                             permanent: false,
                             direction: "top"
                         });
 
-                        layer.on('click', function() {
-                            const barangayName = feature.properties.barangay;
-
-                            // Fetch data for the clicked barangay
+                        // Fetch data only for barangays with cases
+                        if (barangaysWithCases.includes(barangayName)) {
                             fetch(`/api/cases?barangay=${encodeURIComponent(barangayName)}&month=${new Date().getMonth() + 1}`)
                                 .then(response => {
                                     if (!response.ok) {
-                                        throw new Error('Failed to fetch data.');
+                                        throw new Error(`Failed to fetch data for ${barangayName}.`);
                                     }
                                     return response.json();
                                 })
                                 .then(data => {
+                                    barangayDataCache[barangayName] = data;
+                                })
+                                .catch(error => {
+                                    console.error(`Error fetching data for ${barangayName}:`, error);
+                                    barangayDataCache[barangayName] = { error: 'Error loading data.' };
+                                });
+                        }
+
+                        layer.on('click', function() {
+                            // Retrieve data from cache
+                            const data = barangayDataCache[barangayName];
+                            if (data) {
+                                if (data.error) {
+                                    openModal(barangayName, data.error);
+                                } else {
                                     const accidents = data.accidents_count || 0;
                                     const medicalCases = data.medicals_count || 0;
                                     const punongBarangay = data.punong_barangay || 'Unknown';
                                     const contactNumber = data.contact_number || 'N/A';
 
-                                    // Combine medical and accident counts for each rescue team
-                                    const alphaCount = (data.alpha.medicals_count || 0) + (data.alpha.accidents_count || 0);
-                                    const bravoCount = (data.bravo.medicals_count || 0) + (data.bravo.accidents_count || 0);
-                                    const charlieCount = (data.charlie.medicals_count || 0) + (data.charlie.accidents_count || 0);
+                                    const alphaCount = (data.alpha?.medicals_count || 0) + (data.alpha?.accidents_count || 0);
+                                    const bravoCount = (data.bravo?.medicals_count || 0) + (data.bravo?.accidents_count || 0);
+                                    const charlieCount = (data.charlie?.medicals_count || 0) + (data.charlie?.accidents_count || 0);
 
                                     // Prepare modal content
                                     const details = `
@@ -177,11 +210,10 @@ use Carbon\Carbon;
 
                                     // Open modal with data
                                     openModal(barangayName, details);
-                                })
-                                .catch(error => {
-                                    console.error('Error fetching data:', error);
-                                    openModal(barangayName, 'Error loading data.');
-                                });
+                                }
+                            } else {
+                                openModal(barangayName, 'No cases reported this month or data is still loading.');
+                            }
                         });
                     }
                 }
@@ -193,7 +225,6 @@ use Carbon\Carbon;
             console.error('Error loading the GeoJSON file:', error);
             document.getElementById('accident-info').innerHTML = 'Error loading map data.';
         });
-
 
     map.on('focus', function() {
         map.scrollWheelZoom.enable();
@@ -224,6 +255,7 @@ use Carbon\Carbon;
         });
     }
 </script>
+
 
 <style>
     .blur {

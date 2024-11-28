@@ -267,24 +267,22 @@ class MedicalCasesController extends Controller
 
 
     public function getBarangayCases(Request $request)
-    {
-        $month = $request->input('month');
-        $year = $request->input('year');
+{
+    // Default to current month and year
+    $month = $request->input('month', now()->month);
+    $year = $request->input('year', now()->year);
 
-        // Adjust your query to filter by the selected month and year
-        $barangayCases = MedicalCase::select('barangay', DB::raw('COUNT(*) as total_cases'))
-            ->when($month, function ($query) use ($month) {
-                $query->whereMonth('date', $month);
-            })
-            ->when($year, function ($query) use ($year) {
-                $query->whereYear('date', $year);
-            })
-            ->where('is_approved', 1)
-            ->groupBy('barangay')
-            ->get();
+    // Query for barangay cases
+    $barangayCases = MedicalCase::select('barangay', DB::raw('COUNT(*) as total_cases'))
+        ->whereMonth('date', $month)
+        ->whereYear('date', $year)
+        ->where('is_approved', 1)
+        ->groupBy('barangay')
+        ->get();
 
-        return response()->json($barangayCases);
-    }
+    return response()->json($barangayCases);
+}
+
 
 
     public function getBarangayDetails($barangay, Request $request)
