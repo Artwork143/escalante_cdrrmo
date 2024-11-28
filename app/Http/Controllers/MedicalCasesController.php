@@ -17,21 +17,18 @@ class MedicalCasesController extends Controller
      */
     public function index(Request $request)
     {
-        // Filter by month, year, and search term if selected
-        $month = $request->input('month');
-        $year = $request->input('year');
+        // Get filter inputs
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
         $search = $request->input('search');
 
         // Check if the user is an admin
         $isAdmin = Auth::user()->role === 0; // Assuming role 0 is admin
 
         // Query to get all medical cases for display in the table
-        $medicalCasesQuery = MedicalCase::when($month, function ($query, $month) {
-            return $query->whereMonth('date', $month);
+        $medicalCasesQuery = MedicalCase::when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+            return $query->whereBetween('date', [$startDate, $endDate]);
         })
-            ->when($year, function ($query, $year) {
-                return $query->whereYear('date', $year);
-            })
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('rescue_team', 'like', '%' . $search . '%')
@@ -47,24 +44,27 @@ class MedicalCasesController extends Controller
             ->orderBy('is_approved', 'asc'); // Orders by status: Pending first, then Approved
 
         // Retrieve paginated cases for display
-        $medicalCases = $medicalCasesQuery->paginate(5)->appends(['month' => $month, 'year' => $year, 'search' => $search]);
+        $medicalCases = $medicalCasesQuery->paginate(5)->appends([
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'search' => $search
+        ]);
 
         // Calculate the total patients across approved cases only
         $totalPatients = $medicalCasesQuery->where('is_approved', 1)->sum('no_of_patients');
 
         // Retrieve all cases without pagination for printing
-        $allMedicalCasesForPrint = $medicalCasesQuery->paginate($totalPatients)->appends(['month' => $month, 'year' => $year]);
-
-        $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        $allMedicalCasesForPrint = $medicalCasesQuery->paginate($totalPatients)->appends([
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ]);
 
         return view('medical_cases.index', [
             'medicalCases' => $medicalCases,
             'allMedicalCasesForPrint' => $allMedicalCasesForPrint,
-            'months' => $months,
             'totalPatients' => $totalPatients,
         ]);
     }
-
 
     /**
      * Show the form for creating a new medical case.
@@ -267,22 +267,24 @@ class MedicalCasesController extends Controller
 
 
     public function getBarangayCases(Request $request)
-{
-    // Default to current month and year
-    $month = $request->input('month', now()->month);
-    $year = $request->input('year', now()->year);
+    {
+        $month = $request->input('month');
+        $year = $request->input('year');
 
-    // Query for barangay cases
-    $barangayCases = MedicalCase::select('barangay', DB::raw('COUNT(*) as total_cases'))
-        ->whereMonth('date', $month)
-        ->whereYear('date', $year)
-        ->where('is_approved', 1)
-        ->groupBy('barangay')
-        ->get();
+        // Adjust your query to filter by the selected month and year
+        $barangayCases = MedicalCase::select('barangay', DB::raw('COUNT(*) as total_cases'))
+            ->when($month, function ($query) use ($month) {
+                $query->whereMonth('date', $month);
+            })
+            ->when($year, function ($query) use ($year) {
+                $query->whereYear('date', $year);
+            })
+            ->where('is_approved', 1)
+            ->groupBy('barangay')
+            ->get();
 
-    return response()->json($barangayCases);
-}
-
+        return response()->json($barangayCases);
+    }
 
 
     public function getBarangayDetails($barangay, Request $request)

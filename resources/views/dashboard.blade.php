@@ -17,6 +17,24 @@ use Carbon\Carbon;
                             <div class="bg-white shadow-md rounded-lg p-6 absolute top-4 left-4 z-10" style="max-width: 400px;">
                                 <h3 class="font-semibold text-xl text-gray-800">{{ Carbon::now()->format('F') }} Cases per Barangay</h3>
                                 <div id="accident-info" class="text-lg text-gray-700 mt-2">Click on a barangay to see details...</div>
+
+                                <h4 class="font-semibold text-lg mt-3 mb-2 text-gray-800">Legend</h4>
+                                <div class="flex items-center mt-1">
+                                    <div class="w-4 h-4 bg-[#FF0000] opacity-[0.6] inline-block"></div>
+                                    <p class="text-lg text-gray-700 inline-block ml-2">High Cases (10+)</p>
+                                </div>
+                                <div class="flex items-center mt-1">
+                                    <div class="w-4 h-4 bg-[#FFA500] opacity-[0.6] inline-block"></div>
+                                    <p class="text-lg text-gray-700 inline-block ml-2">Medium Cases (5-9)</p>
+                                </div>
+                                <div class="flex items-center mt-1">
+                                    <div class="w-4 h-4 bg-[#FFFF00] opacity-[0.6] inline-block"></div>
+                                    <p class="text-lg text-gray-700 inline-block ml-2">Low Cases (1-4)</p>
+                                </div>
+                                <div class="flex items-center mt-1">
+                                    <div class="w-4 h-4 bg-[#347928] opacity-[0.6] inline-block"></div>
+                                    <p class="text-lg text-gray-700 inline-block ml-2">No Cases (0)</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -140,6 +158,18 @@ use Carbon\Carbon;
             console.error('Error fetching case summary:', error);
         });
 
+    // Function to determine polygon color based on total cases
+    function getPolygonColor(totalCases) {
+        if (totalCases > 9) {
+            return '#FF0000'; // Red for high case count
+        } else if (totalCases > 4) {
+            return '#FFA500'; // Orange for medium case count
+        } else if (totalCases > 0) {
+            return '#FFFF00'; // Yellow for low case count
+        }
+        return '#347928'; // Green for no cases
+    }
+
     // Load GeoJSON data
     fetch('/geojson/Escalante.geojson')
         .then(response => {
@@ -150,18 +180,24 @@ use Carbon\Carbon;
         })
         .then(geojson => {
             var polygonLayer = L.geoJSON(geojson, {
-                style: {
-                    color: '#024CAA',
-                    fillColor: '#347928',
-                    fillOpacity: 0.5
+                style: function(feature) {
+                    const barangayName = feature.properties.barangay;
+                    const data = barangayDataCache[barangayName];
+                    const totalCases = data ? (data.accidents_count || 0) + (data.medicals_count || 0) : 0;
+
+                    return {
+                        color: '#024CAA',
+                        fillColor: getPolygonColor(totalCases),
+                        fillOpacity: 0.5
+                    };
                 },
                 onEachFeature: function(feature, layer) {
                     if (feature.properties && feature.properties.barangay) {
                         const barangayName = feature.properties.barangay;
 
-                        // Bind tooltip with barangay name
+                        // Bind tooltip with barangay name, always visible
                         layer.bindTooltip(barangayName, {
-                            permanent: false,
+                            permanent: true,
                             direction: "top"
                         });
 
@@ -176,10 +212,18 @@ use Carbon\Carbon;
                                 })
                                 .then(data => {
                                     barangayDataCache[barangayName] = data;
+
+                                    // Update polygon style dynamically based on new data
+                                    const totalCases = (data.accidents_count || 0) + (data.medicals_count || 0);
+                                    layer.setStyle({
+                                        fillColor: getPolygonColor(totalCases)
+                                    });
                                 })
                                 .catch(error => {
                                     console.error(`Error fetching data for ${barangayName}:`, error);
-                                    barangayDataCache[barangayName] = { error: 'Error loading data.' };
+                                    barangayDataCache[barangayName] = {
+                                        error: 'Error loading data.'
+                                    };
                                 });
                         }
 
@@ -192,21 +236,24 @@ use Carbon\Carbon;
                                 } else {
                                     const accidents = data.accidents_count || 0;
                                     const medicalCases = data.medicals_count || 0;
+                                    const desasters = data.disasters_count || 0;
                                     const punongBarangay = data.punong_barangay || 'Unknown';
                                     const contactNumber = data.contact_number || 'N/A';
 
                                     const alphaCount = (data.alpha?.medicals_count || 0) + (data.alpha?.accidents_count || 0);
                                     const bravoCount = (data.bravo?.medicals_count || 0) + (data.bravo?.accidents_count || 0);
                                     const charlieCount = (data.charlie?.medicals_count || 0) + (data.charlie?.accidents_count || 0);
+                                    const deltaCount = (data.delta?.medicals_count || 0) + (data.delta?.accidents_count || 0);
 
                                     // Prepare modal content
                                     const details = `
-                                        Vehicular Accidents: ${accidents}<br>
-                                        Medical Cases: ${medicalCases}<br>
-                                        Punong Barangay: ${punongBarangay}<br>
-                                        Contact Number: ${contactNumber}<br>
-                                        Alpha: ${alphaCount} | Bravo: ${bravoCount} | Charlie: ${charlieCount}
-                                    `;
+                                    Vehicular Accidents: ${accidents}<br>
+                                    Medical Cases: ${medicalCases}<br>
+                                    Disasters: ${desasters}<br>
+                                    Punong Barangay: ${punongBarangay}<br>
+                                    Contact Number: ${contactNumber}<br>
+                                    Alpha: ${alphaCount} | Bravo: ${bravoCount} | Charlie: ${charlieCount} | Delta: ${deltaCount}
+                                `;
 
                                     // Open modal with data
                                     openModal(barangayName, details);
@@ -232,6 +279,7 @@ use Carbon\Carbon;
     map.on('blur', function() {
         map.scrollWheelZoom.disable();
     });
+
 
     function openModal(barangayName, details) {
         document.getElementById('modalBarangayName').innerText = barangayName;

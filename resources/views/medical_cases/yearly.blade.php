@@ -20,7 +20,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12 print-adjust">
+    <div class="py-12 print-adjust hidden">
         <div class="max-w-7xl mx-auto sm:px-6 xl:px-0 2xl:px-8">
             @if(auth()->user()->role === 0)
             <div class="flex gap-3 print-hidden">

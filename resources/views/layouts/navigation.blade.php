@@ -54,13 +54,13 @@
                 </div>
 
 
-                @if (Auth::user()->role == 0)
+                <!-- @if (Auth::user()->role == 0)
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('medical_cases.yearly')" :active="request()->routeIs('medical_cases.yearly')">
                         {{ __('Yearly Reports') }}
                     </x-nav-link>
                 </div>
-                @endif
+                @endif -->
 
                 <!-- Conditional Navigation for Admin (Users Management) -->
                 @if (Auth::user()->role == 0)

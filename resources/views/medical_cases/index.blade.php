@@ -39,26 +39,22 @@ use Carbon\Carbon;
 
                     <!-- Filter by Month and Year -->
                     <form method="GET" action="{{ route('medical_cases.index') }}" class="mb-4">
-                        <label for="month" class="block text-sm font-medium text-white mb-1">{{ __("Filter by Date") }}</label>
+                        <label for="month" class="block text-sm font-medium text-white mb-1">{{ __("Filter Date Range") }}</label>
                         <div class="flex space-x-4 justify-between">
                             <div>
-                                <select name="month" id="month" class="w-40 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">{{ __("Select Month") }}</option>
-                                    @foreach($months as $key => $month)
-                                    <option value="{{ $key + 1 }}" {{ request('month') == ($key + 1) ? 'selected' : '' }}>
-                                        {{ $month }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                                <input
+                                    type="date"
+                                    name="start_date"
+                                    id="start_date"
+                                    value="{{ request('start_date') }}"
+                                    class="py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-                                <select name="year" id="year" class="w-40 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">{{ __("Select Year") }}</option>
-                                    @for ($i = date('Y'); $i >= 2000; $i--)
-                                    <option value="{{ $i }}" {{ request('year') == $i ? 'selected' : '' }}>
-                                        {{ $i }}
-                                    </option>
-                                    @endfor
-                                </select>
+                                <input
+                                    type="date"
+                                    name="end_date"
+                                    id="end_date"
+                                    value="{{ request('end_date') }}"
+                                    class="py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
 
                                 <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
                                     {{ __('Filter') }}
@@ -152,9 +148,9 @@ use Carbon\Carbon;
                         </div>
                     </div>
 
-                    @if (request('month') && $totalPatients > 0)
+                    @if (request('start_date') && request('end_date') && $totalPatients > 0)
                     <p class="text-lg font-medium mt-4 border-t-2 border-t-gray-300 pt-2">
-                        {{ __("Total Responses for the Month: ") }} {{ $totalPatients }}
+                        {{ __("Total Responses for this date range: ") }} {{ $totalPatients }}
                     </p>
                     <!-- Print Button -->
                     <div class="grid place-items-end">
@@ -164,8 +160,8 @@ use Carbon\Carbon;
                     </div>
                     @endif
 
-                    @if (!request('month'))
-                    <p class="border-t-2 mt-4 border-t-gray-300 pt-2">{{ __("Please select a month to view the total responses per month.") }}</p>
+                    @if (!request('start_date') && !request('end_date'))
+                    <p class="border-t-2 mt-4 border-t-gray-300 pt-2">{{ __("Please select a date range you want to print.") }}</p>
                     @endif
 
                     <!-- Pagination Links -->
@@ -174,7 +170,7 @@ use Carbon\Carbon;
                     </div>
 
                     @elseif ($medicalCases->isEmpty())
-                    <p>{{ __("No medical cases found for the selected month.") }}</p>
+                    <p>{{ __("No medical cases found for this date range.") }}</p>
                     @endif
 
                 </div>
@@ -182,10 +178,13 @@ use Carbon\Carbon;
                 <!-- Section for Printing Only -->
                 <div class="p-6 text-gray-900 print-show hidden print-header">
                     <!-- Add Header Information -->
-                    @if(request('month'))
+                    @if (request('start_date') && request('end_date') && $totalPatients > 0)
                     <p class="mt-1 pt-1 mb-1 pb-1 border-b-2 border-b-gray-300 text-center">
                         <span class="font-bold text-2xl">Medical Case</span> <br>
-                        Response summary for the month of <span class="text-red-600 font-bold">{{ $months[request('month') - 1] }} {{ request('year') }}</span>
+                        Response summary <span class="text-red-600 font-bold">{{ __("from ") }}
+                            {{ \Carbon\Carbon::parse(request('start_date'))->format('F d, Y') }}
+                            {{ __(" to ") }}
+                            {{ \Carbon\Carbon::parse(request('end_date'))->format('F d, Y') }}</span>
                     </p>
                     @endif
 
@@ -293,11 +292,11 @@ use Carbon\Carbon;
                 </div>
 
                 <div class="grid place-items-end mt-4">
-                <button
-                    onclick="printBarangayCases()"
-                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
-                    Print
-                </button>
+                    <button
+                        onclick="printBarangayCases()"
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
+                        Print
+                    </button>
                 </div>
             </div>
 
