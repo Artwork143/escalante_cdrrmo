@@ -67,16 +67,9 @@ use Carbon\Carbon;
                 </div>
 
                 <div class="p-6 text-gray-900 print-header print-hidden">
-
-                    @if(request('month'))
-                    <p class="hidden print-show mt-1 pt-1 mb-1 pb-1 border-b-2 border-b-gray-300 text-center">
-                        <span class=" font-bold text-2xl">Medical Case</span> <br> Response summary for the month of<span class=" text-red-600 font-bold"> {{ $months[request('month') - 1] }} {{ request('year') }}</span>
-                    </p>
-                    @endif
-
                     @if ($medicalCases->count() > 0)
                     <div class="overflow-x-auto">
-                        <div class="relative max-h-96 2xl:max-h-[30rem] overflow-y-auto">
+                        <div class="relative 2xl:max-h-[30rem] overflow-y-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50 sticky top-0 z-10">
                                     <tr>
@@ -150,7 +143,11 @@ use Carbon\Carbon;
 
                     @if (request('start_date') && request('end_date') && $totalPatients > 0)
                     <p class="text-lg font-medium mt-4 border-t-2 border-t-gray-300 pt-2">
-                        {{ __("Total Responses for this date range: ") }} {{ $totalPatients }}
+                        {{ __("Total Responses for this date range: ") }} {{ $totalCases }}
+                    </p>
+
+                    <p class="text-lg font-medium">
+                        {{ __("Total Patients for this date range: ") }} {{ $totalPatients }}
                     </p>
                     <!-- Print Button -->
                     <div class="grid place-items-end">
@@ -220,9 +217,12 @@ use Carbon\Carbon;
                     </div>
 
                     <!-- Total Responses for the Month -->
-                    @if (request('month') && $totalPatients > 0)
+                    @if (request('start_date') && request('end_date') && $totalPatients > 0)
                     <p class="text-lg font-medium mt-4 border-t-2 border-t-gray-300 pt-2">
-                        {{ __("Total Responses for the Month: ") }} {{ $totalPatients }}
+                        {{ __("Total Responses for this date range: ") }} {{ $totalCases }}
+                    </p>
+                    <p class="text-lg font-medium">
+                        {{ __("Total Patients for this date range: ") }} {{ $totalPatients }}
                     </p>
                     @endif
 
@@ -309,7 +309,7 @@ use Carbon\Carbon;
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Fetch barangay cases data from the backend
-            fetch(`/get-barangay-cases?month={{ request('month') }}&year={{ request('year') }}`)
+            fetch(`/get-barangay-cases?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}`)
                 .then(response => response.json())
                 .then(data => {
                     const sortedForChart = [...data].sort((a, b) => a.total_cases - b.total_cases);
@@ -361,7 +361,7 @@ use Carbon\Carbon;
 
                     // Attach loadBarangayDetails and renderPaginationControls to the window object
                     window.loadBarangayDetails = function(barangay, page = 1) {
-                        fetch(`/get-barangay-details/${barangay}?month={{ request('month') }}&year={{ request('year') }}&page=${page}`)
+                        fetch(`/get-barangay-details/${barangay}?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}&page=${page}`)
                             .then(response => response.json())
                             .then(data => {
                                 displayBarangayDetails(barangay, data.data);

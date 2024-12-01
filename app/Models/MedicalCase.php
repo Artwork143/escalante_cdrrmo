@@ -22,6 +22,7 @@ class MedicalCase extends Model
         'chief_complaints',
         'facility_name',
         'is_approved',
+        'city',  // Add 'city' to the fillable array
     ];
 
     /**

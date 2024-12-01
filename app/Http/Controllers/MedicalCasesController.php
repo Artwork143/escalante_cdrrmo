@@ -52,6 +52,7 @@ class MedicalCasesController extends Controller
 
         // Calculate the total patients across approved cases only
         $totalPatients = $medicalCasesQuery->where('is_approved', 1)->sum('no_of_patients');
+        $totalCases = $medicalCasesQuery->where('is_approved', 1)->count();
 
         // Retrieve all cases without pagination for printing
         $allMedicalCasesForPrint = $medicalCasesQuery->paginate($totalPatients)->appends([
@@ -63,6 +64,7 @@ class MedicalCasesController extends Controller
             'medicalCases' => $medicalCases,
             'allMedicalCasesForPrint' => $allMedicalCasesForPrint,
             'totalPatients' => $totalPatients,
+            'totalCases' => $totalCases
         ]);
     }
 
@@ -89,6 +91,7 @@ class MedicalCasesController extends Controller
             'date' => 'required|date',
             'rescue_team' => 'required|string|max:255',
             'place_of_incident' => 'required|string|max:255',
+            'city' => 'required|string',
             'barangay' => 'required|string',
             'no_of_patients' => 'required|integer',
             'chief_complaints' => 'nullable|string',
@@ -97,6 +100,8 @@ class MedicalCasesController extends Controller
 
         // Set approval based on the user role
         $validated['is_approved'] = Auth::user()->role === 0 ? true : false;
+
+        $validated['barangay'] = ucwords(strtolower($validated['barangay']));  // Capitalize barangay name
 
         // Create a new medical case
         MedicalCase::create($validated);
@@ -133,17 +138,22 @@ class MedicalCasesController extends Controller
             'date' => 'required|date',
             'rescue_team' => 'required|string|max:255',
             'place_of_incident' => 'required|string|max:255',
+            'city' => 'required|string',
             'barangay' => 'required|string',
             'no_of_patients' => 'required|integer',
             'chief_complaints' => 'nullable|string',
             'facility_name' => 'required|string|max:255',
         ]);
 
+        // Capitalize the barangay field (use ucwords to capitalize each word)
+        $validated['barangay'] = ucwords(strtolower($validated['barangay']));
+
         // Update the medical case
         $medicalCase->update($validated);
 
         return redirect()->route('medical_cases.index')->with('success', 'Medical case updated successfully.');
     }
+
 
     /**
      * Remove the specified medical case from the database (Admins only).
@@ -263,21 +273,15 @@ class MedicalCasesController extends Controller
         ]);
     }
 
-
-
-
     public function getBarangayCases(Request $request)
     {
-        $month = $request->input('month');
-        $year = $request->input('year');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
-        // Adjust your query to filter by the selected month and year
+        // Adjust the query to filter by the selected date range
         $barangayCases = MedicalCase::select('barangay', DB::raw('COUNT(*) as total_cases'))
-            ->when($month, function ($query) use ($month) {
-                $query->whereMonth('date', $month);
-            })
-            ->when($year, function ($query) use ($year) {
-                $query->whereYear('date', $year);
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
             })
             ->where('is_approved', 1)
             ->groupBy('barangay')
@@ -286,22 +290,18 @@ class MedicalCasesController extends Controller
         return response()->json($barangayCases);
     }
 
-
     public function getBarangayDetails($barangay, Request $request)
     {
-        $month = $request->input('month');
-        $year = $request->input('year');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
         $page = $request->input('page', 1); // Default to the first page
         $perPage = 10; // Number of items per page
         $search = $request->input('search'); // Search query
 
         // Fetch paginated cases for the given barangay, month, and year
         $barangayDetails = MedicalCase::where('barangay', $barangay)
-            ->when($month, function ($query) use ($month) {
-                $query->whereMonth('date', $month);
-            })
-            ->when($year, function ($query) use ($year) {
-                $query->whereYear('date', $year);
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
             })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {

@@ -128,6 +128,14 @@ use Carbon\Carbon;
 </x-app-layout>
 
 <script>
+    function normalizeName(name) {
+        if (typeof name !== 'string') {
+            return ''; // Return an empty string for invalid input
+        }
+        return name.trim().toUpperCase(); // Trim spaces and convert to uppercase
+    }
+
+
     var selectedLayer = null;
 
     var map = L.map('map', {
@@ -152,7 +160,8 @@ use Carbon\Carbon;
             return response.json();
         })
         .then(data => {
-            barangaysWithCases = data.barangays || []; // Assuming API returns an array of barangay names
+            barangaysWithCases = data.barangays.map(normalizeName); // Normalize names
+            loadGeoJson(); // Load GeoJSON only after data is ready
         })
         .catch(error => {
             console.error('Error fetching case summary:', error);
@@ -171,107 +180,110 @@ use Carbon\Carbon;
     }
 
     // Load GeoJSON data
-    fetch('/geojson/Escalante.geojson')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('GeoJSON file could not be loaded.');
-            }
-            return response.json();
-        })
-        .then(geojson => {
-            var polygonLayer = L.geoJSON(geojson, {
-                style: function(feature) {
-                    const barangayName = feature.properties.barangay;
-                    const data = barangayDataCache[barangayName];
-                    const totalCases = data ? (data.accidents_count || 0) + (data.medicals_count || 0) : 0;
+    function loadGeoJson() {
+        fetch('/geojson/Escalante.geojson')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('GeoJSON file could not be loaded.');
+                }
+                return response.json();
+            })
+            .then(geojson => {
+                var polygonLayer = L.geoJSON(geojson, {
+                    style: function(feature) {
+                        const barangayName = normalizeName(feature.properties?.barangay || 'UNKNOWN');
+                        const data = barangayDataCache[barangayName];
+                        const totalCases = data ? (data.accidents_count || 0) + (data.medicals_count || 0) : 0;
 
-                    return {
-                        color: '#024CAA',
-                        fillColor: getPolygonColor(totalCases),
-                        fillOpacity: 0.5
-                    };
-                },
-                onEachFeature: function(feature, layer) {
-                    if (feature.properties && feature.properties.barangay) {
-                        const barangayName = feature.properties.barangay;
+                        return {
+                            color: '#024CAA',
+                            fillColor: getPolygonColor(totalCases),
+                            fillOpacity: 0.5
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties && feature.properties.barangay) {
+                            const barangayName = normalizeName(feature.properties.barangay);
 
-                        // Bind tooltip with barangay name, always visible
-                        layer.bindTooltip(barangayName, {
-                            permanent: true,
-                            direction: "top"
-                        });
+                            // Bind tooltip with barangay name, always visible
+                            layer.bindTooltip(feature.properties.barangay, {
+                                permanent: true,
+                                direction: "top"
+                            });
 
-                        // Fetch data only for barangays with cases
-                        if (barangaysWithCases.includes(barangayName)) {
-                            fetch(`/api/cases?barangay=${encodeURIComponent(barangayName)}&month=${new Date().getMonth() + 1}`)
-                                .then(response => {
-                                    if (!response.ok) {
-                                        throw new Error(`Failed to fetch data for ${barangayName}.`);
-                                    }
-                                    return response.json();
-                                })
-                                .then(data => {
-                                    barangayDataCache[barangayName] = data;
+                            // Fetch data only for barangays with cases
+                            if (barangaysWithCases.includes(barangayName)) {
+                                fetch(`/api/cases?barangay=${encodeURIComponent(barangayName)}&month=${new Date().getMonth() + 1}`)
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error(`Failed to fetch data for ${barangayName}.`);
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        barangayDataCache[barangayName] = data;
 
-                                    // Update polygon style dynamically based on new data
-                                    const totalCases = (data.accidents_count || 0) + (data.medicals_count || 0);
-                                    layer.setStyle({
-                                        fillColor: getPolygonColor(totalCases)
+                                        // Update polygon style dynamically based on new data
+                                        const totalCases = (data.accidents_count || 0) + (data.medicals_count || 0);
+                                        layer.setStyle({
+                                            fillColor: getPolygonColor(totalCases)
+                                        });
+                                    })
+                                    .catch(error => {
+                                        console.error(`Error fetching data for ${barangayName}:`, error);
+                                        barangayDataCache[barangayName] = {
+                                            error: 'Error loading data.'
+                                        };
                                     });
-                                })
-                                .catch(error => {
-                                    console.error(`Error fetching data for ${barangayName}:`, error);
-                                    barangayDataCache[barangayName] = {
-                                        error: 'Error loading data.'
-                                    };
-                                });
-                        }
+                            }
 
-                        layer.on('click', function() {
-                            // Retrieve data from cache
-                            const data = barangayDataCache[barangayName];
-                            if (data) {
-                                if (data.error) {
-                                    openModal(barangayName, data.error);
-                                } else {
-                                    const accidents = data.accidents_count || 0;
-                                    const medicalCases = data.medicals_count || 0;
-                                    const desasters = data.disasters_count || 0;
-                                    const punongBarangay = data.punong_barangay || 'Unknown';
-                                    const contactNumber = data.contact_number || 'N/A';
+                            layer.on('click', function() {
+                                // Retrieve data from cache
+                                const data = barangayDataCache[barangayName];
+                                if (data) {
+                                    if (data.error) {
+                                        openModal(feature.properties.barangay, data.error);
+                                    } else {
+                                        const accidents = data.accidents_count || 0;
+                                        const medicalCases = data.medicals_count || 0;
+                                        const disasters = data.disasters_count || 0;
+                                        const punongBarangay = data.punong_barangay || 'Unknown';
+                                        const contactNumber = data.contact_number || 'N/A';
 
-                                    const alphaCount = (data.alpha?.medicals_count || 0) + (data.alpha?.accidents_count || 0);
-                                    const bravoCount = (data.bravo?.medicals_count || 0) + (data.bravo?.accidents_count || 0);
-                                    const charlieCount = (data.charlie?.medicals_count || 0) + (data.charlie?.accidents_count || 0);
-                                    const deltaCount = (data.delta?.medicals_count || 0) + (data.delta?.accidents_count || 0);
+                                        const alphaCount = (data.alpha?.medicals_count || 0) + (data.alpha?.accidents_count || 0);
+                                        const bravoCount = (data.bravo?.medicals_count || 0) + (data.bravo?.accidents_count || 0);
+                                        const charlieCount = (data.charlie?.medicals_count || 0) + (data.charlie?.accidents_count || 0);
+                                        const deltaCount = (data.delta?.medicals_count || 0) + (data.delta?.accidents_count || 0);
 
-                                    // Prepare modal content
-                                    const details = `
+                                        // Prepare modal content
+                                        const details = `
                                     Vehicular Accidents: ${accidents}<br>
                                     Medical Cases: ${medicalCases}<br>
-                                    Disasters: ${desasters}<br>
+                                    Disasters: ${disasters}<br>
                                     Punong Barangay: ${punongBarangay}<br>
                                     Contact Number: ${contactNumber}<br>
                                     Alpha: ${alphaCount} | Bravo: ${bravoCount} | Charlie: ${charlieCount} | Delta: ${deltaCount}
                                 `;
 
-                                    // Open modal with data
-                                    openModal(barangayName, details);
+                                        // Open modal with data
+                                        openModal(feature.properties.barangay, details);
+                                    }
+                                } else {
+                                    openModal(feature.properties.barangay, 'No cases reported this month or data is still loading.');
                                 }
-                            } else {
-                                openModal(barangayName, 'No cases reported this month or data is still loading.');
-                            }
-                        });
+                            });
+                        }
                     }
-                }
-            }).addTo(map);
+                }).addTo(map);
 
-            map.fitBounds(polygonLayer.getBounds());
-        })
-        .catch(error => {
-            console.error('Error loading the GeoJSON file:', error);
-            document.getElementById('accident-info').innerHTML = 'Error loading map data.';
-        });
+                map.fitBounds(polygonLayer.getBounds());
+            })
+            .catch(error => {
+                console.error('Error loading the GeoJSON file:', error);
+                document.getElementById('accident-info').innerHTML = 'Error loading map data.';
+            });
+    }
+
 
     map.on('focus', function() {
         map.scrollWheelZoom.enable();

@@ -63,7 +63,7 @@ Route::middleware('auth')->group(function () {
             ->whereMonth('date', $month)
             ->count();
 
-        $rescueTeams = ['Alpha', 'Bravo', 'Charlie'];
+        $rescueTeams = ['Alpha', 'Bravo', 'Charlie', 'Delta'];
         $counts = [];
 
         foreach ($rescueTeams as $team) {
@@ -104,6 +104,10 @@ Route::middleware('auth')->group(function () {
             'charlie' => [
                 'medicals_count' => $counts['Charlie']['medicals_count'],
                 'accidents_count' => $counts['Charlie']['accidents_count'],
+            ],
+            'delta' => [
+                'medicals_count' => $counts['Delta']['medicals_count'],
+                'accidents_count' => $counts['Delta']['accidents_count'],
             ],
         ]);
     });
