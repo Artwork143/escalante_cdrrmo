@@ -16,8 +16,8 @@ class VehicularAccidentsController extends Controller
     public function index(Request $request)
     {
         // Filter by month, year, and search term if selected
-        $month = $request->input('month');
-        $year = $request->input('year');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
         $search = $request->input('search');
 
         // Check if the user is an admin
@@ -25,11 +25,8 @@ class VehicularAccidentsController extends Controller
 
         // Query to get all vehicular accidents for display in the table
         $vehicularAccidentsQuery = VehicularAccident::with('vehicleDetails') // Eager load vehicle details
-            ->when($month, function ($query, $month) {
-                return $query->whereMonth('date', $month);
-            })
-            ->when($year, function ($query, $year) {
-                return $query->whereYear('date', $year);
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('date', [$startDate, $endDate]);
             })
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
@@ -47,21 +44,29 @@ class VehicularAccidentsController extends Controller
             ->orderBy('is_approved', 'asc'); // Orders by status: Pending first, then Approved
 
         // Retrieve paginated cases for display
-        $vehicularAccidents = $vehicularAccidentsQuery->paginate(5)->appends(['month' => $month, 'year' => $year, 'search' => $search]);
+        $vehicularAccidents = $vehicularAccidentsQuery->paginate(5)->appends([
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'search' => $search
+        ]);
 
         // Calculate the total patients across approved cases only
         $totalPatients = $vehicularAccidentsQuery->where('is_approved', 1)->sum('no_of_patients');
+        $totalCases = $vehicularAccidentsQuery->where('is_approved', 1)->count();
 
         // Retrieve all cases without pagination for printing
-        $allAccidentsForPrint = $vehicularAccidentsQuery->paginate($totalPatients)->appends(['month' => $month, 'year' => $year]);
+        $allAccidentsForPrint = $vehicularAccidentsQuery->paginate($totalPatients)->appends([
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ]);
 
-        $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        // $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
         return view('vehicular_accidents.index', [
             'vehicularAccidents' => $vehicularAccidents,
             'allAccidentsForPrint' => $allAccidentsForPrint,
-            'months' => $months,
             'totalPatients' => $totalPatients,
+            'totalCases' => $totalCases
         ]);
     }
 
@@ -293,16 +298,13 @@ class VehicularAccidentsController extends Controller
 
     public function getBarangayCases(Request $request)
     {
-        $month = $request->input('month');
-        $year = $request->input('year');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
         // Adjust your query to filter by the selected month and year
         $barangayAccidents = VehicularAccident::select('barangay', DB::raw('COUNT(*) as total_accidents'))
-            ->when($month, function ($query) use ($month) {
-                $query->whereMonth('date', $month);
-            })
-            ->when($year, function ($query) use ($year) {
-                $query->whereYear('date', $year);
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
             })
             ->where('is_approved', 1)
             ->groupBy('barangay')
@@ -314,8 +316,8 @@ class VehicularAccidentsController extends Controller
 
     public function getBarangayDetails($barangay, Request $request)
     {
-        $month = $request->input('month');
-        $year = $request->input('year');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
         $page = $request->input('page', 1); // Default to the first page
         $perPage = 5; // Number of items per page
         $search = $request->input('search'); // Search query
@@ -323,11 +325,8 @@ class VehicularAccidentsController extends Controller
         // Fetch detailed cases for the given barangay, month, and year
         $barangayDetails = VehicularAccident::with(['vehicles']) // Load related vehicles
             ->where('barangay', $barangay)
-            ->when($month, function ($query) use ($month) {
-                $query->whereMonth('date', $month);
-            })
-            ->when($year, function ($query) use ($year) {
-                $query->whereYear('date', $year);
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
             })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
