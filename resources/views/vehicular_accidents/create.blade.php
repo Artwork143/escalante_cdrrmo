@@ -26,35 +26,21 @@
                                 <option value="Alpha">Alpha</option>
                                 <option value="Bravo">Bravo</option>
                                 <option value="Charlie">Charlie</option>
+                                <option value="Delta">Delta</option>
                             </select>
                         </div>
 
-                        <!-- Barangay (Dropdown) -->
+                        <div class="mb-4">
+                            <label for="city" class="block text-sm font-medium text-gray-700">{{ __('City') }}</label>
+                            <select name="city" id="city" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <option value="">{{ __('Select City') }}</option>
+                            </select>
+                        </div>
+
                         <div class="mb-4">
                             <label for="barangay" class="block text-sm font-medium text-gray-700">{{ __('Barangay') }}</label>
                             <select name="barangay" id="barangay" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                                <option value=""></option>
-                                <option value="Alimango">Alimango</option>
-                                <option value="Balintawak">Balintawak</option>
-                                <option value="Binaguiohan">Binaguiohan</option>
-                                <option value="Buenavista">Buenavista</option>
-                                <option value="Cervantes">Cervantes</option>
-                                <option value="Dian-ay">Dian-ay</option>
-                                <option value="Hacienda Fe">Hacienda Fe</option>
-                                <option value="Japitan">Japitan</option>
-                                <option value="Jonob-jonob">Jonob-jonob</option>
-                                <option value="Langub">Langub</option>
-                                <option value="Libertad">Libertad</option>
-                                <option value="Mabini">Mabini</option>
-                                <option value="Magsaysay">Magsaysay</option>
-                                <option value="Malasibog">Malasibog</option>
-                                <option value="Old Poblacion">Old Poblacion</option>
-                                <option value="Paitan">Paitan</option>
-                                <option value="Pinapugasan">Pinapugasan</option>
-                                <option value="Rizal">Rizal</option>
-                                <option value="Tamlang">Tamlang</option>
-                                <option value="Udtongan">Udtongan</option>
-                                <option value="Washington">Washington</option>
+                                <option value="">{{ __('Select Barangay') }}</option>
                             </select>
                         </div>
 
@@ -164,6 +150,15 @@
                                         <input type="text" name="truck_type" id="truck_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
                                 </div>
+                                <!-- Bike -->
+                                <div>
+                                    <input type="checkbox" name="vehicles_involved[]" value="Bike" id="vehicle_bike" class="mr-2" onclick="toggleVehicleInput('bike')">
+                                    <label for="vehicle_motorcycle">{{ __('Bike') }}</label>
+                                    <div id="bike_input" class="mt-2 hidden">
+                                        <label for="bike_type" class="block text-sm font-medium text-gray-700">{{ __('Specific Bike') }}</label>
+                                        <input type="text" name="bike_type" id="bike_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -210,6 +205,93 @@
                     otherCauseInput.classList.remove('hidden');
                 } else {
                     otherCauseInput.classList.add('hidden');
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cityDropdown = document.getElementById('city');
+            const barangayDropdown = document.getElementById('barangay');
+            let geoData = null; // Store the geoJSON data here
+
+            // Load GeoJSON data once when the page loads
+            fetch('/geojson/philippines.json')
+                .then(response => response.json())
+                .then(data => {
+                    geoData = data; // Store the data in the variable
+                    populateCityDropdown(data); // Populate city dropdown on load
+                })
+                .catch(error => console.error('Error loading GeoJSON:', error));
+
+            // Populate the City dropdown with cities from GeoJSON data
+            function populateCityDropdown(data) {
+                const cityList = [];
+
+                // Collect all cities into a single array
+                Object.keys(data).forEach(regionCode => {
+                    const provinces = data[regionCode].province_list;
+                    Object.keys(provinces).forEach(province => {
+                        const municipalities = provinces[province].municipality_list;
+                        Object.keys(municipalities).forEach(municipality => {
+                            cityList.push(municipality);
+                        });
+                    });
+                });
+
+                // Sort the city list alphabetically
+                cityList.sort((a, b) => a.localeCompare(b));
+
+                // Populate the City dropdown
+                cityList.forEach(cityName => {
+                    const option = document.createElement('option');
+                    option.value = cityName;
+                    option.textContent = cityName;
+                    cityDropdown.appendChild(option);
+                });
+            }
+
+            // When a City is selected, populate the Barangay dropdown
+            cityDropdown.addEventListener('change', () => {
+                const selectedCity = cityDropdown.value;
+
+                // Clear Barangay dropdown
+                barangayDropdown.innerHTML = '<option value="">{{ __("Select Barangay") }}</option>';
+
+                // Check if the selected City exists in the GeoJSON data
+                if (selectedCity && geoData) {
+                    populateBarangayDropdown(selectedCity);
+                }
+            });
+
+            // Populate the Barangay dropdown based on the selected City
+            function populateBarangayDropdown(city) {
+                const barangayList = [];
+
+                Object.keys(geoData).forEach(regionCode => {
+                    const provinces = geoData[regionCode].province_list;
+                    Object.keys(provinces).forEach(province => {
+                        const municipalities = provinces[province].municipality_list;
+                        if (municipalities[city]) {
+                            barangayList.push(...municipalities[city].barangay_list);
+                        }
+                    });
+                });
+
+                // Populate the Barangay dropdown
+                barangayList.forEach(barangay => {
+                    const option = document.createElement('option');
+                    option.value = barangay;
+                    option.textContent = barangay;
+                    barangayDropdown.appendChild(option);
+                });
+            }
+
+            // Add form submission check
+            const form = document.getElementById('medical-case-form');
+            form.addEventListener('submit', (e) => {
+                if (!cityDropdown.value) {
+                    e.preventDefault(); // Prevent form submission
+                    alert('Please select a city before submitting the form.');
                 }
             });
         });

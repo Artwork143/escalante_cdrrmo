@@ -89,6 +89,7 @@ class VehicularAccidentsController extends Controller
             'date' => 'required|date',
             'rescue_team' => 'required|string',
             'place_of_incident' => 'required|string',
+            'city' => 'required|string',
             'barangay' => 'required|string',
             'no_of_patients' => 'required|integer',
             'cause_of_incident' => 'required|string',
@@ -97,7 +98,7 @@ class VehicularAccidentsController extends Controller
             'vehicles_involved.*' => 'string',  // Each vehicle must be a string
             'facility_name' => 'required|string',
         ]);
-
+        $request['barangay'] = ucwords(strtolower($request['barangay']));
         // Check if the user is an admin
         $isAdmin = Auth::user()->role === 0;
 
@@ -111,6 +112,7 @@ class VehicularAccidentsController extends Controller
             'date' => $request->date,
             'rescue_team' => $request->rescue_team,
             'place_of_incident' => $request->place_of_incident,
+            'city' => $request->city,
             'barangay' => $request->barangay,
             'no_of_patients' => $request->no_of_patients,
             'cause_of_incident' => $causeOfIncident, // Save the appropriate cause
@@ -118,6 +120,8 @@ class VehicularAccidentsController extends Controller
             'facility_name' => $request->facility_name,
             'is_approved' => $isAdmin ? 1 : 0, // Automatically approve if admin
         ]);
+
+
 
         // Loop through the vehicles involved and their specific details
         foreach ($request->vehicles_involved as $vehicle) {
@@ -136,6 +140,8 @@ class VehicularAccidentsController extends Controller
                 $vehicleDetail = $request->input('bus_type');
             } elseif ($vehicle == 'Truck') {
                 $vehicleDetail = $request->input('truck_type');
+            } elseif ($vehicle == 'Bike') {
+                $vehicleDetail = $request->input('bike_type');
             }
 
             // Store each vehicle and its details in the vehicle_details table (or related table)
@@ -174,9 +180,27 @@ class VehicularAccidentsController extends Controller
         // Prepare vehicle details as a key-value pair for easier access in the form
         $vehicleDetails = $vehicularAccident->vehicleDetails->pluck('vehicle_detail', 'vehicle_type')->toArray();
 
-        return view('vehicular_accidents.edit', compact('vehicularAccident', 'vehicleDetails'));
-    }
+        // Define the list of predefined causes
+        $causes = [
+            'Overspeeding',
+            'Mechanical Failure',
+            'Collision',
+            'Hit & Run',
+            'Road Condition',
+            'Drunk Driving',
+            'Distracted Driving',
+            'Weather Conditions',
+            'Reckless Driving',
+            'Overloading',
+            'Improper Turning',
+            'Pedestrian Error',
+            'Fatigue',
+            'Road Hazards',
+            'Lack of Signage'
+        ];
 
+        return view('vehicular_accidents.edit', compact('vehicularAccident', 'vehicleDetails', 'causes'));
+    }
 
     /**
      * Update the specified vehicular accident in storage.
@@ -204,6 +228,11 @@ class VehicularAccidentsController extends Controller
             'truck_type' => 'nullable|string',
         ]);
 
+        // Determine if "Other" was selected and handle accordingly
+        $causeOfIncident = $request->cause_of_incident === 'Other'
+            ? $request->input('other_cause') // Use the value from the "Other" input field
+            : $request->cause_of_incident; // Use the selected dropdown value
+
         // Find the vehicular accident record
         $vehicularAccident = VehicularAccident::findOrFail($id);
 
@@ -214,7 +243,7 @@ class VehicularAccidentsController extends Controller
             'place_of_incident' => $request->place_of_incident,
             'barangay' => $request->barangay,
             'no_of_patients' => $request->no_of_patients,
-            'cause_of_incident' => $request->cause_of_incident,
+            'cause_of_incident' => $causeOfIncident, // Save the appropriate cause of incident
             'facility_name' => $request->facility_name,
         ]);
 
@@ -236,6 +265,7 @@ class VehicularAccidentsController extends Controller
 
         return redirect()->route('vehicular_accidents.index')->with('success', 'Vehicular accident updated successfully!');
     }
+
 
 
 

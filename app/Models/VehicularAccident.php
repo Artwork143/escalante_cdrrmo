@@ -23,6 +23,7 @@ class VehicularAccident extends Model
         'vehicles_involved',
         'facility_name',
         'is_approved',
+        'city',
     ];
 
     /**
