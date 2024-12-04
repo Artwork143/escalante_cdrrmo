@@ -50,8 +50,6 @@ class DisasterController extends Controller
             'Date',
             'Rescue Team',
             'Place of Incident',
-            'City',
-            'Barangay',
             'Type',
             'Affected Infrastructure',
             'Casualties',
@@ -88,12 +86,13 @@ class DisasterController extends Controller
     // Map the disaster data dynamically based on the disaster type
     private function mapDisasterData($disaster, $type)
     {
+        // Combine 'City' and 'Barangay' into 'Place of Incident'
+        $placeOfIncident = ucwords(strtolower("{$disaster->place_of_incident}, Brgy. {$disaster->barangay}, {$disaster->city}"));
+
         $data = [
             $disaster->date,
             $disaster->rescue_team,
-            $disaster->place_of_incident,
-            $disaster->city,
-            $disaster->barangay,
+            $placeOfIncident,
             $disaster->type,
             $disaster->affected_infrastructure,
             $disaster->casualties,
@@ -141,8 +140,6 @@ class DisasterController extends Controller
             'date' => 'required|date',
             'rescue_team' => 'required|string|max:255',
             'place_of_incident' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'barangay' => 'required|string|max:255',
             'type' => 'required|string|max:255',
             'affected_infrastructure' => 'nullable|string|max:255',
             'casualties' => 'required|integer',
