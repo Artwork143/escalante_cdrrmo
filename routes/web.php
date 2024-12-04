@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DisasterController;
 use App\Http\Controllers\MedicalCasesController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicularAccidentsController;
@@ -42,6 +43,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehicular_accidents/create', [VehicularAccidentsController::class, 'create'])->name('vehicular_accidents.create');
     Route::post('/vehicular_accidents', [VehicularAccidentsController::class, 'store'])->name('vehicular_accidents.store');
     // Route::get('/yearly-vehicular-accidents', [VehicularAccidentsController::class, 'showYearlyReport'])->name('vehicular_accidents.yearly');
+
+    // Disasters
+    Route::get('/disasters', [DisasterController::class, 'index'])->name('disasters.index');
+    Route::get('/disaster-data/{type}', [DisasterController::class, 'getDisasterData']);
+    Route::get('/disasters/create', [DisasterController::class, 'create'])->name('disasters.create');
+    Route::post('/disasters', [DisasterController::class, 'store'])->name('disasters.store');
 
     // Combined API route for getting accidents and medical cases by barangay
     Route::get('/api/cases', function (Request $request) {

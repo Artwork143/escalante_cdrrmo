@@ -53,6 +53,12 @@
                     </div>
                 </div>
 
+                
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('disasters.index')" :active="request()->routeIs('disasters')">
+                        {{ __('Disasters') }}
+                    </x-nav-link>
+                </div>
 
                 <!-- @if (Auth::user()->role == 0)
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
