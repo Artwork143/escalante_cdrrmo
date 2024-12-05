@@ -37,7 +37,7 @@ use Carbon\Carbon;
                         </a>
                     </div>
 
-                    <!-- Filter by Month and Year -->
+                    <!-- Filter data range -->
                     <form method="GET" action="{{ route('medical_cases.index') }}" class="mb-4">
                         <label for="month" class="block text-sm font-medium text-white mb-1">{{ __("Filter Date Range") }}</label>
                         <div class="flex space-x-4 justify-between">

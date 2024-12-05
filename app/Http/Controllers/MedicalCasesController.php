@@ -295,7 +295,7 @@ class MedicalCasesController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $page = $request->input('page', 1); // Default to the first page
-        $perPage = 10; // Number of items per page
+        $perPage = 5; // Number of items per page
         $search = $request->input('search'); // Search query
 
         // Fetch paginated cases for the given barangay, month, and year

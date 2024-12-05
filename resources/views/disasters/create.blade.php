@@ -80,7 +80,7 @@
                         <div id="dynamic-fields" class="space-y-4"></div>
 
                         <!-- Submit Button -->
-                        <div class="flex justify-end">
+                        <div class="flex justify-end mt-4">
                             <a href="{{ route('disasters.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-700 mr-2">
                                 {{ __('Cancel') }}
                             </a>
@@ -139,11 +139,21 @@
                         dynamicFieldsContainer.innerHTML = `
                             <div class="mb-4">
                                 <label for="current_water_level" class="block text-sm font-medium text-gray-700">{{ __('Current Water Level') }}</label>
-                                <input type="text" name="current_water_level" id="current_water_level" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <select name="current_water_level" id="current_water_level" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <option value="">{{ __('Select Water Level') }}</option>
+                                    <option value="Knee Deep">Knee Deep</option>
+                                    <option value="Waist Deep">Waist Deep</option>
+                                    <option value="Chest Deep">Chest Deepe</option>
+                                    <option value="Roof Top">Roof Top</option>
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label for="water_level_trend" class="block text-sm font-medium text-gray-700">{{ __('Water Level Trend') }}</label>
-                                <input type="text" name="water_level_trend" id="water_level_trend" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <select name="water_level_trend" id="water_level_trend" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <option value="">{{ __('Select Water Trend') }}</option>
+                                    <option value="Rising">Rising</option>
+                                    <option value="Falling">Falling</option>
+                                </select>
                             </div>
                         `;
                         break;
@@ -152,11 +162,23 @@
                         dynamicFieldsContainer.innerHTML = `
                             <div class="mb-4">
                                 <label for="intensity_level" class="block text-sm font-medium text-gray-700">{{ __('Intensity Level') }}</label>
-                                <input type="text" name="intensity_level" id="intensity_level" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <select name="intensity_level" id="intensity_level" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <option value="">{{ __('Select Intensity') }}</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label for="aftershocks" class="block text-sm font-medium text-gray-700">{{ __('Aftershocks') }}</label>
-                                <input type="text" name="aftershocks" id="aftershocks" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <input type="number" name="aftershocks" id="aftershocks" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                             </div>
                         `;
                         break;
@@ -165,11 +187,23 @@
                         dynamicFieldsContainer.innerHTML = `
                             <div class="mb-4">
                                 <label for="eruption_type" class="block text-sm font-medium text-gray-700">{{ __('Eruption Type') }}</label>
-                                <input type="text" name="eruption_type" id="eruption_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <select name="eruption_type" id="eruption_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <option value="">{{ __('Select Eruption Type') }}</option>
+                                    <option value="Phreatic">Phreatic</option>
+                                    <option value="Phreatomagmatic">Phreatomagmatic</option>
+                                    <option value="Strombolian">Strombolian</option>
+                                    <option value="Vulcanian">Vulcanian</option>
+                                    <option value="Plinian">Plinian</option>
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label for="eruption_intensity" class="block text-sm font-medium text-gray-700">{{ __('Eruption Intensity') }}</label>
-                                <input type="text" name="eruption_intensity" id="eruption_intensity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <select name="eruption_intensity" id="eruption_intensity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <option value="">{{ __('Select Eruption Intensity') }}</option>
+                                    <option value="Weak">Weak</option>
+                                    <option value="Moderate">Moderate</option>
+                                    <option value="Strong">Strong</option>
+                                </select>
                             </div>
                         `;
                         break;

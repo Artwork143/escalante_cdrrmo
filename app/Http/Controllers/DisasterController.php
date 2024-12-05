@@ -4,126 +4,63 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Disaster;
+use Illuminate\Support\Facades\Auth;
 
 class DisasterController extends Controller
 {
-    // Index method to load hardcoded disaster types for dropdown
-    public function index()
+    // Index method to load filtered disaster cases
+    public function index(Request $request)
     {
-        // Hardcoded disaster types
+        // Check if the user is an admin
+        $isAdmin = Auth::user()->role === 0;
+
+        // Hardcoded disaster types for dropdown
         $disasterTypes = ['Flood', 'Earthquake', 'Volcanic Eruption', 'Rebel Encounter'];
 
-        return view('disasters.index', compact('disasterTypes'));
-    }
+        // Get the selected disaster type from query parameters (or default to the first type)
+        $selectedType = $request->query('type', $disasterTypes[0]);
 
-    // Get disaster data based on the selected disaster type
-    public function getDisasterData($type)
-    {
-        // Validate if the disaster type is valid
-        $validTypes = ['Flood', 'Earthquake', 'Volcanic Eruption', 'Rebel Encounter'];
-        if (!in_array($type, $validTypes)) {
-            return response()->json(['error' => 'Invalid disaster type.'], 400);
+        // Validate if the selected type is valid
+        if (!in_array($selectedType, $disasterTypes)) {
+            return redirect()->route('disasters.index')->withErrors(['Invalid disaster type selected.']);
         }
 
-        // Query data based on disaster type
-        $disasterData = Disaster::where('type', $type)->get();
+        // Retrieve disasters filtered by type
+        $disasters = Disaster::where('type', $selectedType)
+            ->when(!$isAdmin, function ($query) {
+                return $query->where('is_approved', 1); // Non-admin users only see approved cases
+            })
+            ->get();
 
-        // Prepare dynamic headers based on disaster type
-        $headers = $this->getDynamicHeaders($type);
-
-        // Map the disaster data to rows
-        $rows = $disasterData->map(function ($disaster) use ($type) {
-            return $this->mapDisasterData($disaster, $type);
-        });
-
-        // Return formatted response
-        return response()->json([
-            'headers' => $headers,
-            'rows' => $rows,
-        ]);
+        return view('disasters.index', compact('disasters', 'disasterTypes', 'selectedType'));
     }
 
-    // Get dynamic headers based on the disaster type
-    private function getDynamicHeaders($type)
+    // Destroy a disaster case
+    public function destroy($id)
     {
-        $baseHeaders = [
-            'Date',
-            'Rescue Team',
-            'Place of Incident',
-            'Type',
-            'Affected Infrastructure',
-            'Casualties',
-        ];
+        // Find the disaster record by ID or fail
+        $disaster = Disaster::findOrFail($id);
 
-        switch ($type) {
-            case 'Flood':
-                return array_merge($baseHeaders, [
-                    'Current Water Level',
-                    'Water Level Trend',
-                ]);
-            case 'Earthquake':
-                return array_merge($baseHeaders, [
-                    'Intensity Level',
-                    'Aftershocks',
-                ]);
-            case 'Volcanic Eruption':
-                return array_merge($baseHeaders, [
-                    'Eruption Type',
-                    'Eruption Intensity',
-                ]);
-            case 'Rebel Encounter':
-                return array_merge($baseHeaders, [
-                    'Involved Parties',
-                    'Triggering Event',
-                    'Nature of Encounter',
-                    'Duration',
-                ]);
-            default:
-                return $baseHeaders;
-        }
+        // Capture the type of the disaster before deleting
+        $type = $disaster->type;
+
+        // Delete the disaster record
+        $disaster->delete();
+
+        // Redirect to the specific table using the disaster type
+        return redirect()->route('disasters.index', ['type' => $type])
+            ->with('success', "Disaster case of type '{$type}' deleted successfully.");
     }
 
-    // Map the disaster data dynamically based on the disaster type
-    private function mapDisasterData($disaster, $type)
+
+    // Approve a disaster case
+    public function approve($id)
     {
-        // Combine 'City' and 'Barangay' into 'Place of Incident'
-        $placeOfIncident = ucwords(strtolower("{$disaster->place_of_incident}, Brgy. {$disaster->barangay}, {$disaster->city}"));
+        $disaster = Disaster::findOrFail($id);
+        $disaster->is_approved = true;
+        $disaster->save();
 
-        $data = [
-            $disaster->date,
-            $disaster->rescue_team,
-            $placeOfIncident,
-            $disaster->type,
-            $disaster->affected_infrastructure,
-            $disaster->casualties,
-        ];
-
-        switch ($type) {
-            case 'Flood':
-                return array_merge($data, [
-                    $disaster->current_water_level,
-                    $disaster->water_level_trend,
-                ]);
-            case 'Earthquake':
-                return array_merge($data, [
-                    $disaster->intensity_level,
-                    $disaster->aftershocks,
-                ]);
-            case 'Volcanic Eruption':
-                return array_merge($data, [
-                    $disaster->eruption_type,
-                    $disaster->eruption_intensity,
-                ]);
-            case 'Rebel Encounter':
-                return array_merge($data, [
-                    $disaster->involved_parties,
-                    $disaster->triggering_event,
-                    $disaster->nature_of_encounter,
-                    $disaster->duration,
-                ]);
-            default:
-                return $data;
-        }
+        return redirect()->route('disasters.index')->with('success', 'Disaster case approved successfully.');
     }
 
     // Show form to create a new disaster case
@@ -132,10 +69,9 @@ class DisasterController extends Controller
         return view('disasters.create');
     }
 
-    // Store a new disaster case in the database
+    // Store a new disaster case
     public function store(Request $request)
     {
-        // Validate incoming request data
         $request->validate([
             'date' => 'required|date',
             'rescue_team' => 'required|string|max:255',
@@ -155,10 +91,25 @@ class DisasterController extends Controller
             'duration' => 'nullable|string',
         ]);
 
-        // Store the new disaster record
+        $request['is_approved'] = Auth::user()->role === 0 ? true : false;
+        $request['barangay'] = ucwords(strtolower($request['barangay']));
+
         Disaster::create($request->all());
 
-        // Redirect with success message
-        return redirect()->route('disasters.index')->with('success', 'Disaster case created successfully.');
+        return redirect()->route('disasters.index', ['type' => $request->type])
+            ->with('success', 'Disaster case created successfully.');
+    }
+
+    // Fetch disaster data dynamically (optional for AJAX requests)
+    public function getDisasterData($type)
+    {
+        $validTypes = ['Flood', 'Earthquake', 'Volcanic Eruption', 'Rebel Encounter'];
+        if (!in_array($type, $validTypes)) {
+            return response()->json(['error' => 'Invalid disaster type.'], 400);
+        }
+
+        $disasters = Disaster::where('type', $type)->get();
+
+        return response()->json($disasters);
     }
 }
