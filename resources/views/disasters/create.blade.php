@@ -66,15 +66,142 @@
 
                         <!-- Affected Infrastructure -->
                         <div class="mb-4">
-                            <label for="affected_infrastructure" class="block text-sm font-medium text-gray-700">{{ __('Affected Infrastructure') }}</label>
-                            <input type="text" name="affected_infrastructure" id="affected_infrastructure" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700">{{ __('Affected Infrastructure') }}</label>
+                            <div id="infrastructure-options" class="space-y-2">
+
+                                <!-- Roads -->
+                                <div>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="roads" name="infrastructure_types[]" value="roads" class="mr-2">
+                                        <span>{{ __('Roads') }}</span>
+                                    </label>
+                                    <select id="roads-dropdown" name="roads_condition" class="mt-2 hidden w-40 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        <option value="flooded">{{ __('Flooded') }}</option>
+                                        <option value="impassable">{{ __('Impassable') }}</option>
+                                        <option value="damaged">{{ __('Damaged') }}</option>
+                                    </select>
+                                </div>
+
+                                <!-- Bridges -->
+                                <div>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="bridges" name="infrastructure_types[]" value="bridges" class="mr-2">
+                                        <span>{{ __('Bridges') }}</span>
+                                    </label>
+                                    <select id="bridges-dropdown" name="bridges_condition" class="mt-2 hidden w-40 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        <option value="flooded">{{ __('Flooded') }}</option>
+                                        <option value="impassable">{{ __('Impasseable') }}</option>
+                                        <option value="damaged">{{ __('Damaged') }}</option>
+                                    </select>
+                                </div>
+
+                                <!-- Buildings -->
+                                <div>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="buildings" name="infrastructure_types[]" value="buildings" class="mr-2">
+                                        <span>{{ __('Buildings') }}</span>
+                                    </label>
+                                    <div id="buildings-options" class="mt-2 hidden space-y-2">
+                                        <div>
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="school" name="buildings_types[]" value="school" class="mr-2">
+                                                <span>{{ __('School') }}</span>
+                                            </label>
+                                            <select id="school-dropdown" name="school_condition" class="mt-2 hidden w-40 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                                <option value="flooded">{{ __('Flooded') }}</option>
+                                                <option value="impassable">{{ __('Impasseable') }}</option>
+                                                <option value="damaged">{{ __('Damaged') }}</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="house" name="buildings_types[]" value="house" class="mr-2">
+                                                <span>{{ __('House') }}</span>
+                                            </label>
+                                            <select id="house-dropdown" name="house_condition" class="mt-2 hidden w-40 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                                <option value="flooded">{{ __('Flooded') }}</option>
+                                                <option value="impassable">{{ __('Impasseable') }}</option>
+                                                <option value="damaged">{{ __('Damaged') }}</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="government" name="buildings_types[]" value="government" class="mr-2">
+                                                <span>{{ __('Government Facility') }}</span>
+                                            </label>
+                                            <select id="government-dropdown" name="government_condition" class="mt-2 hidden w-40 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                                <option value="flooded">{{ __('Flooded') }}</option>
+                                                <option value="impassable">{{ __('Impasseable') }}</option>
+                                                <option value="damaged">{{ __('Damaged') }}</option>
+                                            </select>
+                                        </div>
+                                        <!-- Add other building types similarly -->
+                                    </div>
+                                </div>
+
+                                <!-- Powerlines -->
+                                <div>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="powerlines" name="infrastructure_types[]" value="powerlines" class="mr-2">
+                                        <span>{{ __('Powerlines') }}</span>
+                                    </label>
+                                    <select id="powerlines-dropdown" name="powerlines_condition" class="mt-2 hidden w-40 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        <option value="flooded">{{ __('Flooded') }}</option>
+                                        <option value="impassable">{{ __('Impasseable') }}</option>
+                                        <option value="damaged">{{ __('Damaged') }}</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Casualties -->
-                        <div class="mb-4">
+
+                        <!-- Casualties Section -->
+                        <div id="casualties-section" class="mb-4">
                             <label for="casualties" class="block text-sm font-medium text-gray-700">{{ __('Casualties') }}</label>
-                            <input type="number" name="casualties" id="casualties" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            <div id="casualties-options" class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="killed" name="casualties_types[]" value="killed" class="mr-2">
+                                    <label for="killed" class="text-sm font-medium text-gray-700">{{ __('Killed') }}</label>
+                                    <input type="number" id="killed-count" name="killed_count" placeholder="Number" class="ml-4 w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="injured" name="casualties_types[]" value="injured" class="mr-2">
+                                    <label for="injured" class="text-sm font-medium text-gray-700">{{ __('Injured') }}</label>
+                                    <input type="number" id="injured-count" name="injured_count" placeholder="Number" class="ml-4 w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="missing" name="casualties_types[]" value="missing" class="mr-2">
+                                    <label for="missing" class="text-sm font-medium text-gray-700">{{ __('Missing') }}</label>
+                                    <input type="number" id="missing-count" name="missing_count" placeholder="Number" class="ml-4 w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Casualties for Rebel Encounter -->
+                        <div id="rebel-casualties" class="space-y-2 hidden">
+                            <label for="casualties" class="block text-sm font-medium text-gray-700">{{ __('Casualties') }}</label>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="police-killed" name="rebel_casualties_types[]" value="police_killed" class="mr-2">
+                                <label for="police-killed" class="text-sm font-medium text-gray-700">{{ __('Police Killed') }}</label>
+                                <input type="number" id="police-killed-count" name="police_killed_count" placeholder="Number" class="ml-4 w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="police-injured" name="rebel_casualties_types[]" value="police_injured" class="mr-2">
+                                <label for="police-injured" class="text-sm font-medium text-gray-700">{{ __('Police Injured') }}</label>
+                                <input type="number" id="police-injured-count" name="police_injured_count" placeholder="Number" class="ml-4 w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="rebel-killed" name="rebel_casualties_types[]" value="rebel_killed" class="mr-2">
+                                <label for="rebel-killed" class="text-sm font-medium text-gray-700">{{ __('Rebel Killed') }}</label>
+                                <input type="number" id="rebel-killed-count" name="rebel_killed_count" placeholder="Number" class="ml-4 w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+                            </div>
+                            <div class="flex items-centerx`">
+                                <input type="checkbox" id="rebel-injured" name="rebel_casualties_types[]" value="rebel_injured" class="mr-2">
+                                <label for="rebel-injured" class="text-sm font-medium text-gray-700">{{ __('Rebel Injured') }}</label>
+                                <input type="number" id="rebel-injured-count" name="rebel_injured_count" placeholder="Number" class="ml-4 w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+                            </div>
+                        </div>
+
 
                         <!-- Dynamic Fields based on Disaster Type -->
                         <div id="dynamic-fields" class="space-y-4"></div>
@@ -95,6 +222,38 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const infrastructures = ["roads", "bridges", "powerlines", "buildings"];
+            const buildingTypes = ["school", "house", "government"]; // Add more building types here
+
+            infrastructures.forEach((id) => {
+                const checkbox = document.getElementById(id);
+                const dropdown = document.getElementById(`${id}-dropdown`);
+                if (checkbox && dropdown) {
+                    checkbox.addEventListener("change", () => {
+                        dropdown.classList.toggle("hidden", !checkbox.checked);
+                    });
+                }
+
+                if (id === "buildings") {
+                    const optionsDiv = document.getElementById("buildings-options");
+                    checkbox.addEventListener("change", () => {
+                        optionsDiv.classList.toggle("hidden", !checkbox.checked);
+                    });
+
+                    buildingTypes.forEach((type) => {
+                        const typeCheckbox = document.getElementById(type);
+                        const typeDropdown = document.getElementById(`${type}-dropdown`);
+                        if (typeCheckbox && typeDropdown) {
+                            typeCheckbox.addEventListener("change", () => {
+                                typeDropdown.classList.toggle("hidden", !typeCheckbox.checked);
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             const cityDropdown = document.getElementById('city');
             const barangayDropdown = document.getElementById('barangay');
@@ -211,26 +370,34 @@
                     case 'Rebel Encounter':
                         dynamicFieldsContainer.innerHTML = `
                             <div class="mb-4">
-                                <label for="involved_parties" class="block text-sm font-medium text-gray-700">{{ __('Involved Parties') }}</label>
-                                <input type="text" name="involved_parties" id="involved_parties" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <label for="police_unit" class="block text-sm font-medium text-gray-700 mt-4">{{ __('Police Unit/Agency') }}</label>
+                                <input type="text" name="police_unit" id="police_unit" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="rebel_group" class="block text-sm font-medium text-gray-700">{{ __('Rebel Group') }}</label>
+                                <input type="text" name="rebel_group" id="rebel_group" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                             </div>
                             <div class="mb-4">
                                 <label for="triggering_event" class="block text-sm font-medium text-gray-700">{{ __('Triggering Event') }}</label>
-                                <input type="text" name="triggering_event" id="triggering_event" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <select name="triggering_event" id="triggering_event" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <option value="">{{ __('Select Triggering Event') }}</option>
+                                    <option value="Checkpoint">Checkpoint</option>
+                                    <option value="Pursuit Ambush">Pursuit Ambush</option>
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label for="nature_of_encounter" class="block text-sm font-medium text-gray-700">{{ __('Nature of Encounter') }}</label>
-                                <input type="text" name="nature_of_encounter" id="nature_of_encounter" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <select name="nature_of_encounter" id="nature_of_encounter" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <option value="">{{ __('Select Nature of Encounter') }}</option>
+                                    <option value="Firefight">Firefight</option>
+                                    <option value="Standoff">Standoff</option>
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label for="duration" class="block text-sm font-medium text-gray-700">{{ __('Duration') }}</label>
                                 <input type="text" name="duration" id="duration" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                             </div>
                         `;
-                        break;
-
-                    default:
-                        dynamicFieldsContainer.innerHTML = '';
                         break;
                 }
             });
@@ -262,6 +429,41 @@
                     barangayDropdown.appendChild(option);
                 });
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const typeDropdown = document.getElementById('type');
+            const casualtiesSection = document.getElementById('casualties-section');
+            const rebelCasualties = document.getElementById('rebel-casualties');
+
+            const casualtiesFields = ['killed', 'injured', 'missing'];
+            const rebelFields = ['police-killed', 'police-injured', 'rebel-killed', 'rebel-injured'];
+
+            // Toggle input visibility for checked checkboxes
+            [...casualtiesFields, ...rebelFields].forEach(field => {
+                const checkbox = document.getElementById(field);
+                const input = document.getElementById(`${field}-count`);
+
+                if (checkbox && input) {
+                    checkbox.addEventListener('change', () => {
+                        input.classList.toggle('hidden', !checkbox.checked);
+                        input.classList.toggle('block', checkbox.checked);
+                    });
+                }
+            });
+
+            // Handle Disaster Type change
+            typeDropdown.addEventListener('change', () => {
+                const selectedType = typeDropdown.value;
+
+                if (selectedType === 'Rebel Encounter') {
+                    casualtiesSection.classList.add('hidden');
+                    rebelCasualties.classList.remove('hidden');
+                } else {
+                    casualtiesSection.classList.remove('hidden');
+                    rebelCasualties.classList.add('hidden');
+                }
+            });
         });
     </script>
 </x-app-layout>

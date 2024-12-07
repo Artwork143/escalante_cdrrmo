@@ -39,13 +39,19 @@ class Disaster extends Model
         'duration',            // Rebel Encounter
     ];
 
+    // public function getCasualtiesAttribute($value)
+    // {
+    //     return explode(', ', $value); // Return casualties as an array for easier use
+    // }
+
+
     /**
      * Custom attribute logic based on the disaster type.
      */
     public function getDynamicAttributes()
     {
         $dynamicAttributes = [];
-        
+
         switch ($this->type) {
             case 'Flood':
                 $dynamicAttributes = [
