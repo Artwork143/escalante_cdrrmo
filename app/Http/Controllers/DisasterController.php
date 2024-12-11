@@ -50,7 +50,12 @@ class DisasterController extends Controller
         }
 
         // Pagination
-        $disasters = $disastersQuery->paginate(5);
+        $disasters = $disastersQuery->paginate(5)->appends([
+            'type' => $selectedType,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'search' => $search
+        ]);
 
         return view('disasters.index', compact('disasters'));
     }
@@ -217,10 +222,24 @@ class DisasterController extends Controller
 
         // Example: Get disasters data between the given date range
         $disasters = Disaster::whereBetween('date', [$startDate, $endDate])
-            ->select('type', DB::raw('SUM(casualties) as total_casualties'))
+            ->select('type', DB::raw('COUNT(*) as total_casualties'))
             ->groupBy('type')
+            ->orderBy('is_approved', 'asc')
             ->get();
 
         return response()->json($disasters);
+    }
+
+    public function getDisasterDetails($disasterType, Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        $details = Disaster::where('type', $disasterType)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->select('date', 'rescue_team', 'barangay', 'affected_infrastructure', 'casualties', 'type')
+            ->get();
+
+        return response()->json($details);
     }
 }

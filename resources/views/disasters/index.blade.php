@@ -98,7 +98,7 @@
 
                 <!-- Bar chart section -->
                 <div class="bg-white shadow-md sm:rounded-lg w-3/5 p-6 mt-10">
-                    <h3 class="text-lg font-semibold mb-4 mt-2">{{ __("Ranking of Disasters (Most to Least) by Casualties") }}</h3>
+                    <h3 class="text-lg font-semibold mb-4 mt-2">{{ __("Ranking of Disasters (Most to Least)") }}</h3>
                     <canvas id="disasterRankingChart"></canvas>
 
                     <!-- Suggestion Box -->
@@ -106,6 +106,38 @@
                         <p class="font-semibold">Focus on Disaster Type: <span id="focusDisaster"></span></p>
                         <p>This disaster type has the highest number of casualties and might require more attention and resources.</p>
                     </div>
+                </div>
+            </div>
+
+            <div id="disasterDetails" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10">
+                <div class="mb-4 flex justify-between">
+                    <h3 id="disasterTitle" class="text-lg font-semibold mb-2"></h3>
+                    <input
+                        type="text"
+                        id="searchBar"
+                        placeholder="Search cases..."
+                        class="border rounded px-3 py-2 w-1/4"
+                        oninput="searchBarangayCases()" />
+                </div>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rescue Team</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barangay</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Affected Infrastructure</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Casualties</th>
+                        </tr>
+                    </thead>
+                    <tbody id="disasterTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Rows will be dynamically added here -->
+                    </tbody>
+                </table>
+                
+                <div class="hidden flex-col mt-1 p-1 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700" id="suggest">
+                    <p id="suggestionBox2" class="font-semibold">
+                    </p>
+                    <p>This barangay has the highest number of cases and might require more attention and resources.</p>
                 </div>
             </div>
 
@@ -122,7 +154,7 @@
                     const sortedForChart = [...data].sort((a, b) => a.total_casualties - b.total_casualties);
                     const sortedForRanking = [...data].sort((a, b) => b.total_casualties - a.total_casualties);
 
-                    const labels = sortedForChart.map(item => item.disaster_type);
+                    const labels = sortedForChart.map(item => item.type);
                     const values = sortedForChart.map(item => item.total_casualties);
                     const backgroundColors = values.map(() => getRandomColor());
 
@@ -143,6 +175,65 @@
                     renderBarChart(sortedForRanking);
 
                     // Function to render the Pie Chart
+                    function loadDisasterDetails(disasterType) {
+                        fetch(`/get-disaster-details/${disasterType}?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                displayDisasterDetails(disasterType, data);
+                            })
+                            .catch(error => console.error('Error fetching disaster details:', error));
+                    }
+
+                    function displayDisasterDetails(disasterType, details) {
+                        const disasterDetails = document.getElementById('disasterDetails');
+                        const disasterTitle = document.getElementById('disasterTitle');
+                        const tableBody = document.getElementById('disasterTableBody');
+                        const suggestionBox2 = document.getElementById('suggestionBox2'); // Assuming this exists in the HTML
+
+                        // Update title
+                        disasterTitle.innerText = `Details for ${disasterType}`;
+
+                        // Find duplicate barangays
+                        const barangayCount = {};
+                        details.forEach(detail => {
+                            if (barangayCount[detail.barangay]) {
+                                barangayCount[detail.barangay]++;
+                            } else {
+                                barangayCount[detail.barangay] = 1;
+                            }
+                        });
+
+                        // Get list of barangays that appear more than once
+                        const duplicateBarangays = Object.keys(barangayCount).filter(barangay => barangayCount[barangay] > 1);
+
+                        // Display duplicate barangays in suggestion box
+                        if (duplicateBarangays.length > 0) {
+                            suggestionBox2.innerHTML = `Focus on this Barangay: ${duplicateBarangays.join(', ')}`;
+                            document.getElementById('suggest').classList.add('flex');
+                            document.getElementById('suggest').classList.remove('hidden');
+                        }
+
+                        // Populate table rows
+                        tableBody.innerHTML = details.map(detail => `
+                        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.rescue_team}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.barangay}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.affected_infrastructure}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.casualties}</td>
+                        </tr>
+                    `).join('');
+
+                        // Show the table
+                        disasterDetails.classList.remove('hidden');
+
+                        // Scroll to the details
+                        disasterDetails.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+
+                    // Modify the onClick in both chart render functions
                     function renderPieChart(labels, values, backgroundColors) {
                         const ctxPie = document.getElementById('disasterPieChart').getContext('2d');
                         new Chart(ctxPie, {
@@ -150,7 +241,7 @@
                             data: {
                                 labels: labels,
                                 datasets: [{
-                                    label: 'Disasters by Type',
+                                    label: 'Cases',
                                     data: values,
                                     backgroundColor: backgroundColors,
                                     hoverOffset: 4,
@@ -162,17 +253,15 @@
                                     if (item.length > 0) {
                                         const index = item[0].index;
                                         const disasterType = labels[index];
-                                        // Optionally, you can load disaster details for that type
-                                        // loadDisasterDetails(disasterType);
+                                        loadDisasterDetails(disasterType); // Load details for the clicked type
                                     }
                                 }
                             }
                         });
                     }
 
-                    // Render the Horizontal Bar Chart for ranking disasters
                     function renderBarChart(sortedForRanking) {
-                        const rankingLabels = sortedForRanking.map(item => item.disaster_type);
+                        const rankingLabels = sortedForRanking.map(item => item.type);
                         const rankingValues = sortedForRanking.map(item => item.total_casualties);
                         const ctxBar = document.getElementById('disasterRankingChart').getContext('2d');
 
@@ -181,7 +270,7 @@
                             data: {
                                 labels: rankingLabels,
                                 datasets: [{
-                                    label: 'Total Casualties',
+                                    label: 'Total Cases',
                                     data: rankingValues,
                                     backgroundColor: 'rgba(75, 192, 192, 0.6)',
                                     borderColor: 'rgba(75, 192, 192, 1)',
@@ -200,8 +289,7 @@
                                     if (item.length > 0) {
                                         const index = item[0].index;
                                         const disasterType = rankingLabels[index];
-                                        // Optionally, you can load disaster details for that type
-                                        // loadDisasterDetails(disasterType);
+                                        loadDisasterDetails(disasterType); // Load details for the clicked type
                                     }
                                 }
                             }
@@ -209,16 +297,87 @@
                     }
 
                     // Show suggestion for disaster type with highest casualties
-                    const highestCaseDisaster = sortedForRanking[0].disaster_type;
+                    const highestCaseDisaster = sortedForRanking[0].type;
                     const highestCaseCount = sortedForRanking[0].total_casualties;
                     const suggestionBox = document.getElementById('suggestionBox');
                     const focusDisaster = document.getElementById('focusDisaster');
                     focusDisaster.innerText = `${highestCaseDisaster} (${highestCaseCount} casualties)`;
-                    if (highestCaseCount > 0) {
+                    if (highestCaseCount > 1) {
                         suggestionBox.classList.remove('hidden');
                     }
                 });
         });
-    </script>
 
+        function searchBarangayCases() {
+            // Get the search term from the input field
+            const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+
+            // Get all the rows in the table body
+            const tableBody = document.getElementById('disasterTableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            // Loop through each row and toggle its visibility based on the search term
+            for (let row of rows) {
+                // Get all cells in the current row
+                const cells = row.getElementsByTagName('td');
+
+                // Combine the text content of all cells for search comparison
+                const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+
+                // Check if the row text contains the search term
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = ''; // Show row
+                } else {
+                    row.style.display = 'none'; // Hide row
+                }
+            }
+        }
+    </script>
+    <style>
+        @media print {
+
+            nav,
+            .header,
+            .flex.justify-between,
+            .mb-4,
+            .bg-blue-500,
+            .bg-green-500,
+            .bg-yellow-500,
+            .bg-red-500,
+            .print-hidden {
+                display: none;
+            }
+
+            .relative {
+                max-height: none !important;
+            }
+
+            table {
+                font-size: 15px;
+                /* Reduce the font size for printing */
+            }
+
+            th,
+            td {
+                padding: 4px !important;
+                /* Reduce padding to fit columns */
+            }
+
+            .print-show {
+                display: block;
+            }
+
+            .print-adjust {
+                padding-bottom: 0px;
+                padding-top: 10px;
+            }
+
+            .print-header {
+                padding-top: 0px;
+                margin-top: 0px;
+                padding-bottom: 10px;
+                margin-bottom: 0px;
+            }
+        }
+    </style>
 </x-app-layout>
