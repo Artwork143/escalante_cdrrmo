@@ -5,34 +5,54 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Disaster;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DisasterController extends Controller
 {
     // Index method to load filtered disaster cases
     public function index(Request $request)
     {
-        // Check if the user is an admin
-        $isAdmin = Auth::user()->role === 0;
+        $isAdmin = Auth::user()->role === 0;  // Assuming 0 means admin
 
-        // Hardcoded disaster types for dropdown
-        $disasterTypes = ['Flood', 'Earthquake', 'Volcanic Eruption', 'Rebel Encounter'];
+        // Get filters from the request
+        $selectedType = $request->query('type');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+        $search = $request->query('search');
 
-        // Get the selected disaster type from query parameters (or default to the first type)
-        $selectedType = $request->query('type', $disasterTypes[0]);
+        $disastersQuery = Disaster::query();
 
-        // Validate if the selected type is valid
-        if (!in_array($selectedType, $disasterTypes)) {
-            return redirect()->route('disasters.index')->withErrors(['Invalid disaster type selected.']);
+        // Filter by disaster type
+        if ($selectedType) {
+            $disastersQuery->where('type', $selectedType);
         }
 
-        // Retrieve disasters filtered by type
-        $disasters = Disaster::where('type', $selectedType)
-            ->when(!$isAdmin, function ($query) {
-                return $query->where('is_approved', 1); // Non-admin users only see approved cases
-            })
-            ->get();
+        // Filter by date range
+        if ($startDate) {
+            $disastersQuery->whereDate('date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $disastersQuery->whereDate('date', '<=', $endDate);
+        }
 
-        return view('disasters.index', compact('disasters', 'disasterTypes', 'selectedType'));
+        // Search functionality
+        if ($search) {
+            $disastersQuery->where(function ($query) use ($search) {
+                $query->where('place_of_incident', 'like', "%{$search}%")
+                    ->orWhere('rescue_team', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('barangay', 'like', "%{$search}%")
+                    ->orWhere('affected_infrastructure', 'like', "%{$search}%")
+                    ->orWhere('casualties', 'like', "%{$search}%")
+                    ->orWhere('triggering_event', 'like', "%{$search}%")
+                    ->orWhere('nature_of_encounter', 'like', "%{$search}%");
+            });
+        }
+
+        // Pagination
+        $disasters = $disastersQuery->paginate(5);
+
+        return view('disasters.index', compact('disasters'));
     }
 
     // Destroy a disaster case
@@ -166,14 +186,40 @@ class DisasterController extends Controller
 
 
     // Fetch disaster data dynamically (optional for AJAX requests)
-    public function getDisasterData($type)
-    {
-        $validTypes = ['Flood', 'Earthquake', 'Volcanic Eruption', 'Rebel Encounter'];
-        if (!in_array($type, $validTypes)) {
-            return response()->json(['error' => 'Invalid disaster type.'], 400);
-        }
+    // public function getDisasterData($type)
+    // {
+    //     $validTypes = ['Flood', 'Earthquake', 'Volcanic Eruption', 'Rebel Encounter'];
+    //     if (!in_array($type, $validTypes)) {
+    //         return response()->json(['error' => 'Invalid disaster type.'], 400);
+    //     }
 
-        $disasters = Disaster::where('type', $type)->get();
+    //     $disasters = Disaster::where('type', $type)->get();
+
+    //     return response()->json($disasters);
+    // }
+
+    public function getDisastersByBarangay(Request $request)
+    {
+        $barangay = $request->input('barangay');
+
+        // Retrieve and count the accidents in the specified barangay
+        $disasterCount = Disaster::where('barangay', $barangay)
+            ->where('is_approved', 1) // Only count approved accidents
+            ->count();
+
+        return response()->json(['disasters_count' => $disasterCount]);
+    }
+
+    public function getDisasterData(Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Example: Get disasters data between the given date range
+        $disasters = Disaster::whereBetween('date', [$startDate, $endDate])
+            ->select('type', DB::raw('SUM(casualties) as total_casualties'))
+            ->groupBy('type')
+            ->get();
 
         return response()->json($disasters);
     }

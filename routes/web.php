@@ -7,6 +7,7 @@ use App\Http\Controllers\DisasterController;
 use App\Http\Controllers\MedicalCasesController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicularAccidentsController;
+use App\Models\Disaster;
 use App\Models\MedicalCase;
 use App\Models\VehicularAccident;
 use Illuminate\Http\Request;
@@ -70,6 +71,11 @@ Route::middleware('auth')->group(function () {
             ->whereMonth('date', $month)
             ->count();
 
+        $disastersCount = Disaster::where('barangay', $barangay)
+            ->where('is_approved', 1)
+            ->whereMonth('date', $month)
+            ->count();
+
         $rescueTeams = ['Alpha', 'Bravo', 'Charlie', 'Delta'];
         $counts = [];
 
@@ -87,6 +93,12 @@ Route::middleware('auth')->group(function () {
                 ->where('barangay', $barangay)
                 ->whereMonth('date', $month)
                 ->count();
+
+            $counts[$team]['disasters_count'] = Disaster::where('rescue_team', $team)
+                ->where('is_approved', 1)
+                ->where('barangay', $barangay)
+                ->whereMonth('date', $month)
+                ->count();
         }
 
         // Fetch Punong Barangay and Contact Number
@@ -98,23 +110,28 @@ Route::middleware('auth')->group(function () {
             'barangay' => $barangay,
             'accidents_count' => $accidentsCount,
             'medicals_count' => $medicalsCount,
+            'disasters_count' => $disastersCount,
             'punong_barangay' => $barangayInfo->punong_barangay ?? 'Unknown',
             'contact_number' => $barangayInfo->contact_number ?? 'N/A',
             'alpha' => [
                 'medicals_count' => $counts['Alpha']['medicals_count'],
                 'accidents_count' => $counts['Alpha']['accidents_count'],
+                'disasters_count' => $counts['Alpha']['disasters_count'],
             ],
             'bravo' => [
                 'medicals_count' => $counts['Bravo']['medicals_count'],
                 'accidents_count' => $counts['Bravo']['accidents_count'],
+                'disasters_count' => $counts['Bravo']['disasters_count'],
             ],
             'charlie' => [
                 'medicals_count' => $counts['Charlie']['medicals_count'],
                 'accidents_count' => $counts['Charlie']['accidents_count'],
+                'disasters_count' => $counts['Charlie']['disasters_count'],
             ],
             'delta' => [
                 'medicals_count' => $counts['Delta']['medicals_count'],
                 'accidents_count' => $counts['Delta']['accidents_count'],
+                'disasters_count' => $counts['Delta']['disasters_count'],
             ],
         ]);
     });
@@ -153,6 +170,8 @@ Route::get('/get-barangay-details/{barangay}', [MedicalCasesController::class, '
 Route::get('/get-barangay-accidents', [VehicularAccidentsController::class, 'getBarangayCases']);
 Route::get('/get-barangay-accidents/{barangay}', [VehicularAccidentsController::class, 'getBarangayDetails']);
 
+Route::get('/get-disaster-data', [DisasterController::class, 'getDisasterData']);
+
 Route::get('/yearly-medicals', [MedicalCasesController::class, 'getYearlyMedicals']);
 
 
@@ -172,14 +191,24 @@ Route::get('/api/cases/summary', function (Request $request) {
         ->distinct()
         ->pluck('barangay');
 
-    // Combine both lists and remove duplicates
-    $barangaysWithCases = $accidentBarangays->merge($medicalBarangays)->unique();
+    // Fetch barangays with disaster cases for the given month
+    $disasterBarangays = Disaster::where('is_approved', 1)
+        ->whereMonth('date', $month)
+        ->distinct()
+        ->pluck('barangay');
+
+    // Combine all lists and remove duplicates
+    $barangaysWithCases = $accidentBarangays
+        ->merge($medicalBarangays)
+        ->merge($disasterBarangays)
+        ->unique();
 
     return response()->json([
         'month' => $month,
         'barangays' => $barangaysWithCases,
     ]);
 });
+
 
 
 require __DIR__ . '/auth.php';

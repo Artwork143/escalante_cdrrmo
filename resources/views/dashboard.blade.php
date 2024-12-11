@@ -193,7 +193,7 @@ use Carbon\Carbon;
                     style: function(feature) {
                         const barangayName = normalizeName(feature.properties?.barangay || 'UNKNOWN');
                         const data = barangayDataCache[barangayName];
-                        const totalCases = data ? (data.accidents_count || 0) + (data.medicals_count || 0) : 0;
+                        const totalCases = data ? (data.accidents_count || 0) + (data.medicals_count || 0) + (data.disasters_count || 0) : 0;
 
                         return {
                             color: '#024CAA',
@@ -224,7 +224,7 @@ use Carbon\Carbon;
                                         barangayDataCache[barangayName] = data;
 
                                         // Update polygon style dynamically based on new data
-                                        const totalCases = (data.accidents_count || 0) + (data.medicals_count || 0);
+                                        const totalCases = (data.accidents_count || 0) + (data.medicals_count || 0) + (data.disasters_count || 0);
                                         layer.setStyle({
                                             fillColor: getPolygonColor(totalCases)
                                         });
@@ -250,10 +250,10 @@ use Carbon\Carbon;
                                         const punongBarangay = data.punong_barangay || 'Unknown';
                                         const contactNumber = data.contact_number || 'N/A';
 
-                                        const alphaCount = (data.alpha?.medicals_count || 0) + (data.alpha?.accidents_count || 0);
-                                        const bravoCount = (data.bravo?.medicals_count || 0) + (data.bravo?.accidents_count || 0);
-                                        const charlieCount = (data.charlie?.medicals_count || 0) + (data.charlie?.accidents_count || 0);
-                                        const deltaCount = (data.delta?.medicals_count || 0) + (data.delta?.accidents_count || 0);
+                                        const alphaCount = (data.alpha?.medicals_count || 0) + (data.alpha?.accidents_count || 0) + (data.alpha?.disasters_count || 0);
+                                        const bravoCount = (data.bravo?.medicals_count || 0) + (data.bravo?.accidents_count || 0) + (data.bravo?.disasters_count || 0);
+                                        const charlieCount = (data.charlie?.medicals_count || 0) + (data.charlie?.accidents_count || 0) + (data.charlie?.disasters_count || 0);
+                                        const deltaCount = (data.delta?.medicals_count || 0) + (data.delta?.accidents_count || 0) + (data.delta?.disasters_count || 0);
 
                                         // Prepare modal content
                                         const details = `
