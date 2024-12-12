@@ -160,7 +160,8 @@ Route::middleware(['auth', 'rolemanager:admin'])->group(function () {
     // Disasters admin-only actions
     Route::patch('/disasters/{id}/approve', [DisasterController::class, 'approve'])->name('disasters.approve');
     Route::delete('/disasters/{id}', [DisasterController::class, 'destroy'])->name('disasters.destroy');
-    Route::get('/disasters/{id}/edit', [DisasterController::class, 'edit'])->name('disasters.edit');
+    Route::get('/disasters/{disaster}/edit', [DisasterController::class, 'edit'])->name('disasters.edit');
+    Route::put('/disasters/{disaster}', [DisasterController::class, 'update'])->name('disasters.update');
 });
 
 // API route

@@ -242,4 +242,38 @@ class DisasterController extends Controller
 
         return response()->json($details);
     }
+
+
+    public function edit(Disaster $disaster)
+    {
+        return view('disasters.edit', compact('disaster'));
+    }
+
+    public function update(Request $request, Disaster $disaster)
+    {
+        $validatedData = $request->validate([
+            'date' => 'required|date',
+            'rescue_team' => 'required|string',
+            'place_of_incident' => 'required|string',
+            'city' => 'required|string',
+            'barangay' => 'required|string',
+            'type' => 'required|string',
+            'affected_infrastructure' => 'nullable|string',
+            'casualties' => 'nullable|string',
+            'current_water_level' => 'nullable|string',
+            'water_level_trend' => 'nullable|string',
+            'intensity_level' => 'nullable|string',
+            'aftershocks' => 'nullable|string',
+            'eruption_type' => 'nullable|string',
+            'eruption_intensity' => 'nullable|string',
+            'involved_parties' => 'nullable|string',
+            'triggering_event' => 'nullable|string',
+            'nature_of_encounter' => 'nullable|string',
+            'duration' => 'nullable|string',
+        ]);
+
+        $disaster->update($validatedData);
+
+        return redirect()->route('disasters.index')->with('success', 'Disaster updated successfully!');
+    }
 }

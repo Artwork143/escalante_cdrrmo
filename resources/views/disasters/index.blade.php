@@ -3,6 +3,22 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight print-hidden">
             {{ __('Disasters Management') }}
         </h2>
+
+
+        <div class="hidden print-show text-center">
+            <div class="flex items-center justify-center">
+                <img src="{{ asset('images/escaLogo.jpg') }}" class="w-1/5 max-w-sm">
+                <div class="mx-4">
+                    <p class="font-bold">
+                        REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
+                    </p>
+                    <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
+                    <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
+                    <p class="text-red-600">09152627121 | 09089376724</p>
+                </div>
+                <img src="{{ asset('images/logo.png') }}" class="w-1/5 max-w-sm">
+            </div>
+        </div>
     </x-slot>
 
     <div class="py-12 print-adjust">
@@ -76,6 +92,16 @@
                 </div>
 
                 <div class="p-6 text-gray-900 print-header">
+                    <!-- Add Header Information -->
+                    @if (request('start_date') && request('end_date'))
+                    <p class="mt-1 pt-1 mb-1 pb-1 border-b-2 border-b-gray-300 text-center hidden print-show">
+                        <span class="font-bold text-2xl">Disaster Case</span> <br>
+                        Response summary <span class="text-red-600 font-bold">{{ __("from ") }}
+                            {{ \Carbon\Carbon::parse(request('start_date'))->format('F d, Y') }}
+                            {{ __(" to ") }}
+                            {{ \Carbon\Carbon::parse(request('end_date'))->format('F d, Y') }}</span>
+                    </p>
+                    @endif
                     <!-- Tables for different disasters -->
                     @if($disasters->isEmpty())
                     <p class="text-gray-500 text-center">No disasters found for the selected filters.</p>
@@ -109,7 +135,7 @@
                 </div>
             </div>
 
-            <div id="disasterDetails" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10">
+            <div id="disasterDetails" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10 print-hidden">
                 <div class="mb-4 flex justify-between">
                     <h3 id="disasterTitle" class="text-lg font-semibold mb-2"></h3>
                     <input
@@ -133,11 +159,19 @@
                         <!-- Rows will be dynamically added here -->
                     </tbody>
                 </table>
-                
+
                 <div class="hidden flex-col mt-1 p-1 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700" id="suggest">
                     <p id="suggestionBox2" class="font-semibold">
                     </p>
                     <p>This barangay has the highest number of cases and might require more attention and resources.</p>
+                </div>
+
+                <div class="grid place-items-end mt-4">
+                    <button
+                        onclick="printBarangayCases()"
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
+                        Print
+                    </button>
                 </div>
             </div>
 
@@ -331,6 +365,85 @@
                     row.style.display = 'none'; // Hide row
                 }
             }
+        }
+
+
+        function printBarangayCases() {
+            // Get the table's HTML
+            const table = document.querySelector('#disasterTableBody').parentElement.outerHTML;
+
+            // Create a new window
+            const printWindow = window.open('', '', 'height=600,width=800');
+
+            // Write the necessary HTML to the new window
+            printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print Barangay Cases</title>
+                <style>
+                    /* Add any styles you want for the printed page */
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .header img {
+                        width: 100px;
+                        max-width: 100px;
+                        height: auto;
+                    }
+                    .header p {
+                        margin: 0;
+                        line-height: 1.4;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="{{ asset('images/escaLogo.jpg') }}" alt="Esca Logo">
+                    <div class="mx-4">
+                        <p class="font-bold">
+                            REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
+                        </p>
+                        <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
+                        <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
+                        <p class="text-red-600">09152627121 | 09089376724</p>
+                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo">
+                </div>
+                <h2>Details for Selected Calamity</h2>
+                ${table}
+            </body>
+        </html>
+    `);
+
+            // Close the document to ensure all resources are loaded
+            printWindow.document.close();
+
+            // Wait for the content to load before printing
+            printWindow.onload = function() {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            };
         }
     </script>
     <style>
