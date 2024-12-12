@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Disaster;
+use App\Models\DisasterType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -12,6 +13,9 @@ class DisasterController extends Controller
     // Index method to load filtered disaster cases
     public function index(Request $request)
     {
+        // Fetch all disaster types
+        $disasterTypes = DisasterType::all();
+
         $isAdmin = Auth::user()->role === 0;  // Assuming 0 means admin
 
         // Get filters from the request
@@ -57,7 +61,7 @@ class DisasterController extends Controller
             'search' => $search
         ]);
 
-        return view('disasters.index', compact('disasters'));
+        return view('disasters.index', compact('disasterTypes', 'disasters'));
     }
 
     // Destroy a disaster case
@@ -103,6 +107,7 @@ class DisasterController extends Controller
             'rescue_team' => 'required|string|max:255',
             'place_of_incident' => 'required|string|max:255',
             'type' => 'required|string|max:255',
+            'other_type' => 'nullable|string|max:255', // Validate the custom disaster type
             'current_water_level' => 'nullable|string',
             'water_level_trend' => 'nullable|string',
             'intensity_level' => 'nullable|string',
@@ -116,6 +121,16 @@ class DisasterController extends Controller
             'nature_of_encounter' => 'nullable|string',
             'duration' => 'nullable|string',
         ]);
+
+        // Determine the disaster type
+        $disasterType = $request->type === 'Others' ? $request->other_type : $request->type;
+
+        // If "Others" is selected, save the custom type to the disaster_type table
+        if ($request->type === 'Others' && $request->other_type) {
+            \DB::table('disaster_type')->insertOrIgnore([
+                'type_name' => $request->other_type
+            ]);
+        }
 
         // Initialize casualties data
         $formattedCasualties = [];
@@ -135,7 +150,7 @@ class DisasterController extends Controller
         }
 
         // Process rebel-specific casualties data if type is Rebel Encounter
-        if ($request->type === 'Rebel Encounter' && $request->has('rebel_casualties_types')) {
+        if ($disasterType === 'Rebel Encounter' && $request->has('rebel_casualties_types')) {
             foreach ($request->rebel_casualties_types as $type) {
                 $countKey = $type . '_count';
                 $count = $request->input($countKey);
@@ -170,13 +185,14 @@ class DisasterController extends Controller
 
         // Pre-process data
         $data = $request->all();
+        $data['type'] = $disasterType; // Use the determined disaster type
         $data['is_approved'] = Auth::user()->role === 0; // Set approval based on user role
         $data['barangay'] = ucwords(strtolower($request->barangay)); // Format barangay name
         $data['casualties'] = implode(', ', $formattedCasualties); // Store casualties as formatted string
         $data['affected_infrastructure'] = implode(', ', $affectedInfrastructures); // Store infrastructure as formatted string
 
         // Handle Rebel Encounter specific logic
-        if ($data['type'] === 'Rebel Encounter') {
+        if ($disasterType === 'Rebel Encounter') {
             $data['involved_parties'] =
                 ($request->police_unit ?? 'N/A') .
                 ' and ' . ($request->rebel_group ?? 'N/A');
@@ -185,9 +201,11 @@ class DisasterController extends Controller
         // Save disaster case to database
         Disaster::create($data);
 
-        return redirect()->route('disasters.index', ['type' => $request->type])
+        return redirect()->route('disasters.index', ['type' => $disasterType])
             ->with('success', 'Disaster case created successfully.');
     }
+
+
 
 
     // Fetch disaster data dynamically (optional for AJAX requests)

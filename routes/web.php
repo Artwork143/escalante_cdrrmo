@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DisasterController;
+use App\Http\Controllers\DisasterTypeController;
 use App\Http\Controllers\MedicalCasesController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicularAccidentsController;
@@ -175,6 +176,9 @@ Route::get('/get-disaster-data', [DisasterController::class, 'getDisasterData'])
 Route::get('/get-disaster-details/{disasterType}', [DisasterController::class, 'getDisasterDetails']);
 
 Route::get('/yearly-medicals', [MedicalCasesController::class, 'getYearlyMedicals']);
+
+Route::get('/api/disaster-types', [DisasterTypeController::class, 'index']);
+
 
 
 // API route to get barangays with cases for the current month

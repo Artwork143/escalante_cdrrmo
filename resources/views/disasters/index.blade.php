@@ -38,12 +38,14 @@
                         onchange="document.getElementById('disaster-filter-form').submit()"
                         class="w-1/6 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         <option value="" disabled {{ is_null(request('type')) ? 'selected' : '' }}>Select a disaster</option>
-                        <option value="Flood" {{ request('type') === 'Flood' ? 'selected' : '' }}>Flood</option>
-                        <option value="Earthquake" {{ request('type') === 'Earthquake' ? 'selected' : '' }}>Earthquake</option>
-                        <option value="Volcanic Eruption" {{ request('type') === 'Volcanic Eruption' ? 'selected' : '' }}>Volcanic Eruption</option>
-                        <option value="Rebel Encounter" {{ request('type') === 'Rebel Encounter' ? 'selected' : '' }}>Rebel Encounter</option>
+                        @foreach ($disasterTypes as $type)
+                        <option value="{{ $type->type_name }}" {{ request('type') === $type->type_name ? 'selected' : '' }}>
+                            {{ $type->type_name }}
+                        </option>
+                        @endforeach
                     </select>
                 </form>
+
             </div>
 
             <div class="bg-white shadow-md sm:rounded-lg mb-1">
@@ -445,6 +447,24 @@
                 printWindow.close();
             };
         }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const selectElement = document.getElementById("type");
+
+            // Fetch disaster types from the server
+            fetch('/api/disaster-types')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(disaster => {
+                        const option = document.createElement("option");
+                        option.value = disaster.type_name;
+                        option.textContent = disaster.type_name;
+                        selectElement.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching disaster types:', error));
+        });
     </script>
     <style>
         @media print {

@@ -23,10 +23,6 @@
                             <label for="type" class="block text-sm font-medium text-gray-700">{{ __('Disaster Type') }}</label>
                             <select name="type" id="type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                                 <option value="">{{ __('Select Disaster Type') }}</option>
-                                <option value="Flood">Flood</option>
-                                <option value="Earthquake">Earthquake</option>
-                                <option value="Volcanic Eruption">Volcanic Eruption</option>
-                                <option value="Rebel Encounter">Rebel Encounter</option>
                             </select>
                         </div>
 
@@ -367,6 +363,22 @@
                         `;
                         break;
 
+                    case 'Typhoon':
+                        dynamicFieldsContainer.innerHTML = `
+                            <div class="mb-4">
+                                <label for="typhoon_signal" class="block text-sm font-medium text-gray-700">{{ __('Signal') }}</label>
+                                <select name="typhoon_signal" id="typhoon_signal" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <option value="">{{ __('Select Typhoon Signal') }}</option>
+                                    <option value="Signal No. 1: Minimal wind damage">Signal No. 1: Minimal wind damage</option>
+                                    <option value="Signal No. 2: Moderate wind damage">Signal No. 2: Moderate wind damage</option>
+                                    <option value="Signal No. 3: Significant wind damage">Signal No. 3: Significant wind damage</option>
+                                    <option value="Signal No. 4: Severe wind damage">Signal No. 4: Severe wind damage</option>
+                                    <option value="Signal No. 5: Catastrophic wind damage">Signal No. 5: Catastrophic wind damage</option>
+                                </select>
+                            </div>                            
+                        `;
+                        break;
+
                     case 'Rebel Encounter':
                         dynamicFieldsContainer.innerHTML = `
                             <div class="mb-4">
@@ -465,5 +477,60 @@
                 }
             });
         });
+
+        document.addEventListener("DOMContentLoaded", function () {
+    const selectElement = document.getElementById("type");
+    const otherTypeContainer = document.createElement("div");
+    const otherTypeInput = document.createElement("input");
+
+    // Create and style the "Specify Disaster Type" input (hidden by default)
+    otherTypeContainer.id = "other-type-container";
+    otherTypeContainer.classList.add("hidden");
+    otherTypeContainer.innerHTML = `
+        <label for="other-type" class="block text-sm font-medium text-gray-700">Specify Disaster Type:</label>
+    `;
+    otherTypeInput.type = "text";
+    otherTypeInput.name = "other_type";
+    otherTypeInput.id = "other-type";
+    otherTypeInput.className =
+        "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm";
+    otherTypeInput.placeholder = "Enter disaster type";
+    otherTypeContainer.appendChild(otherTypeInput);
+    selectElement.parentElement.appendChild(otherTypeContainer); // Append it after the dropdown
+
+    // Fetch disaster types from the server
+    fetch('/api/disaster-types')
+        .then((response) => response.json())
+        .then((data) => {
+            data.forEach((disaster) => {
+                const option = document.createElement("option");
+                option.value = disaster.type_name;
+                option.textContent = disaster.type_name;
+                selectElement.appendChild(option);
+            });
+
+            // Add the "Others" option
+            const othersOption = document.createElement("option");
+            othersOption.value = "Others";
+            othersOption.textContent = "Others";
+            selectElement.appendChild(othersOption);
+        })
+        .catch((error) =>
+            console.error("Error fetching disaster types:", error)
+        );
+
+    // Handle the "Others" selection
+    selectElement.addEventListener("change", function () {
+        if (selectElement.value === "Others") {
+            otherTypeContainer.classList.remove("hidden");
+            otherTypeInput.required = true;
+        } else {
+            otherTypeContainer.classList.add("hidden");
+            otherTypeInput.required = false;
+            otherTypeInput.value = ""; // Clear the input field
+        }
+    });
+});
+
     </script>
 </x-app-layout>

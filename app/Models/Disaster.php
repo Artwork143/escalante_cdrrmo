@@ -31,6 +31,7 @@ class Disaster extends Model
         'water_level_trend',   // Flood (Rising/Falling)
         'intensity_level',     // Earthquake
         'aftershocks',         // Earthquake
+        'typhoon_signal',
         'eruption_type',       // Volcanic Eruption
         'eruption_intensity',  // Volcanic Eruption
         'involved_parties',    // Rebel Encounter
@@ -64,6 +65,12 @@ class Disaster extends Model
                 $dynamicAttributes = [
                     'intensity_level' => $this->intensity_level,
                     'aftershocks' => $this->aftershocks,
+                ];
+                break;
+
+            case 'Typhoone':
+                $dynamicAttributes = [
+                    'typhoon_signal' => $this->typhoon_signal,
                 ];
                 break;
 

@@ -45,7 +45,7 @@
                 <td class="px-6 py-4 whitespace-nowrap">{{ $loop->iteration }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ $case->date }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ $case->rescue_team }}</td>
-                <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $case->place_of_incident }}, Brgy. {{ $case->barangay }}</td>
+                <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">{{ $case->place_of_incident }}, Brgy. {{ $case->barangay }}</td>
 
                 <!-- Conditional Columns -->
                 @if (request('type') === 'Flood')
@@ -54,6 +54,8 @@
                 @elseif (request('type') === 'Earthquake')
                 <td class="px-6 py-4 whitespace-nowrap">{{ $case->intensity_level }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ $case->aftershocks }}</td>
+                @elseif (request('type') === 'Typhoon')
+                <td class="px-6 py-4 whitespace-nowrap text-wrap">{{ $case->typhoon_signal }}</td>
                 @elseif (request('type') === 'Volcanic Eruption')
                 <td class="px-6 py-4 whitespace-nowrap">{{ $case->eruption_type }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ $case->eruption_intensity }}</td>

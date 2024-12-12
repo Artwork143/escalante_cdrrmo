@@ -135,7 +135,6 @@ use Carbon\Carbon;
         return name.trim().toUpperCase(); // Trim spaces and convert to uppercase
     }
 
-
     var selectedLayer = null;
 
     var map = L.map('map', {
@@ -160,8 +159,16 @@ use Carbon\Carbon;
             return response.json();
         })
         .then(data => {
-            barangaysWithCases = data.barangays.map(normalizeName); // Normalize names
-            loadGeoJson(); // Load GeoJSON only after data is ready
+            if (!data.barangays || typeof data.barangays !== 'object') {
+                console.error('Unexpected barangays data format:', data.barangays);
+                return;
+            }
+
+            // Normalize barangay names and store them in the array
+            barangaysWithCases = Object.values(data.barangays).map(normalizeName);
+
+            // Load GeoJSON only after fetching case summary
+            loadGeoJson();
         })
         .catch(error => {
             console.error('Error fetching case summary:', error);
@@ -182,18 +189,15 @@ use Carbon\Carbon;
     // Load GeoJSON data
     function loadGeoJson() {
         fetch('/geojson/Escalante.geojson')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('GeoJSON file could not be loaded.');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(geojson => {
                 var polygonLayer = L.geoJSON(geojson, {
                     style: function(feature) {
                         const barangayName = normalizeName(feature.properties?.barangay || 'UNKNOWN');
-                        const data = barangayDataCache[barangayName];
-                        const totalCases = data ? (data.accidents_count || 0) + (data.medicals_count || 0) + (data.disasters_count || 0) : 0;
+                        const data = barangayDataCache[barangayName] || {};
+                        const totalCases = (data.accidents_count ?? 0) +
+                            (data.medicals_count ?? 0) +
+                            (data.disasters_count ?? 0);
 
                         return {
                             color: '#024CAA',
@@ -283,6 +287,7 @@ use Carbon\Carbon;
                 document.getElementById('accident-info').innerHTML = 'Error loading map data.';
             });
     }
+
 
 
     map.on('focus', function() {
