@@ -21,20 +21,34 @@
                         <!-- Disaster Type -->
                         <div class="mb-4">
                             <label for="type" class="block text-sm font-medium text-gray-700">{{ __('Disaster Type') }}</label>
-                            <select name="type" id="type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            <select name="type" id="type"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required onchange="toggleOtherInput(this)">
                                 <option value="">{{ __('Select Disaster Type') }}</option>
+                                @foreach ($disasterTypes as $disasterType)
+                                <option value="{{ $disasterType->type_name }}">{{ $disasterType->type_name }}</option>
+                                @endforeach
+                                <option value="other">{{ __('Other') }}</option>
                             </select>
                         </div>
+
+                        <!-- Hidden input for custom disaster type -->
+                        <div id="other-disaster-type" class="mb-4 hidden">
+                            <label for="other_type" class="block text-sm font-medium text-gray-700">{{ __('Specify Disaster Type') }}</label>
+                            <input type="text" name="other_type" id="other_type"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="{{ __('Enter disaster type') }}">
+                        </div>
+
 
                         <!-- Rescue Team -->
                         <div class="mb-4">
                             <label for="rescue_team" class="block text-sm font-medium text-gray-700">{{ __('Rescue Team') }}</label>
                             <select name="rescue_team" id="rescue_team" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                                <option value="">{{ __('Select Rescue Team') }}</option>
-                                <option value="Alpha">Alpha</option>
-                                <option value="Bravo">Bravo</option>
-                                <option value="Charlie">Charlie</option>
-                                <option value="Delta">Delta</option>
+                                <option value="">{{ __('Select a Rescue Team') }}</option>
+                                @foreach ($rescueTeams as $team)
+                                <option value="{{ $team->team_name }}">{{ $team->team_name }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -478,59 +492,15 @@
             });
         });
 
-        document.addEventListener("DOMContentLoaded", function () {
-    const selectElement = document.getElementById("type");
-    const otherTypeContainer = document.createElement("div");
-    const otherTypeInput = document.createElement("input");
-
-    // Create and style the "Specify Disaster Type" input (hidden by default)
-    otherTypeContainer.id = "other-type-container";
-    otherTypeContainer.classList.add("hidden");
-    otherTypeContainer.innerHTML = `
-        <label for="other-type" class="block text-sm font-medium text-gray-700">Specify Disaster Type:</label>
-    `;
-    otherTypeInput.type = "text";
-    otherTypeInput.name = "other_type";
-    otherTypeInput.id = "other-type";
-    otherTypeInput.className =
-        "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm";
-    otherTypeInput.placeholder = "Enter disaster type";
-    otherTypeContainer.appendChild(otherTypeInput);
-    selectElement.parentElement.appendChild(otherTypeContainer); // Append it after the dropdown
-
-    // Fetch disaster types from the server
-    fetch('/api/disaster-types')
-        .then((response) => response.json())
-        .then((data) => {
-            data.forEach((disaster) => {
-                const option = document.createElement("option");
-                option.value = disaster.type_name;
-                option.textContent = disaster.type_name;
-                selectElement.appendChild(option);
-            });
-
-            // Add the "Others" option
-            const othersOption = document.createElement("option");
-            othersOption.value = "Others";
-            othersOption.textContent = "Others";
-            selectElement.appendChild(othersOption);
-        })
-        .catch((error) =>
-            console.error("Error fetching disaster types:", error)
-        );
-
-    // Handle the "Others" selection
-    selectElement.addEventListener("change", function () {
-        if (selectElement.value === "Others") {
-            otherTypeContainer.classList.remove("hidden");
-            otherTypeInput.required = true;
-        } else {
-            otherTypeContainer.classList.add("hidden");
-            otherTypeInput.required = false;
-            otherTypeInput.value = ""; // Clear the input field
+        function toggleOtherInput(selectElement) {
+            const otherInputDiv = document.getElementById('other-disaster-type');
+            if (selectElement.value === 'other') {
+                otherInputDiv.classList.remove('hidden');
+            } else {
+                otherInputDiv.classList.add('hidden');
+                // Clear the custom input field when not selecting "Other"
+                document.getElementById('other_type').value = '';
+            }
         }
-    });
-});
-
     </script>
 </x-app-layout>

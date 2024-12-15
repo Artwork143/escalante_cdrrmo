@@ -52,13 +52,78 @@
                         </div>
                     </div>
                 </div>
-
                 
+                <!-- 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('disasters.index')" :active="request()->routeIs('disasters.index')">
                         {{ __('Disasters') }}
                     </x-nav-link>
+                </div> -->
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex pt-[21px]">
+                    <div x-data="{ open: false }" class="relative">
+                        <x-nav-link
+                            href="#"
+                            @click.prevent="open = !open"
+                            :active="request()->routeIs('disasters.index') || request()->routeIs('vehicular_accidents.index')"
+                            class="cursor-pointer pb-5">
+                            {{ __('Disaster Management') }}
+                            <div class="inline-flex items-center ms-1">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </x-nav-link>
+
+                        <!-- Dropdown Content -->
+                        <div x-show="open" @click.outside="open = false" class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                <x-dropdown-link :href="route('disasters.index')">
+                                    {{ __('Disaster List') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('disaster_type.index')">
+                                    {{ __('Disaster Type') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('rescue_team.index')">
+                                    {{ __('Rescue Team') }}
+                                </x-dropdown-link>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex pt-[21px]">
+                    <div x-data="{ open: false }" class="relative">
+                        <x-nav-link
+                            href="#"
+                            @click.prevent="open = !open"
+                            :active="request()->routeIs('dss_tools.index') || request()->routeIs('dss_tools.vehicular') || request()->routeIs('dss_tools.disaster')"
+                            class="cursor-pointer pb-5">
+                            {{ __('DSS Tools') }}
+                            <div class="inline-flex items-center ms-1">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </x-nav-link>
+
+                        <!-- Dropdown Content -->
+                        <div x-show="open" @click.outside="open = false" class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                <x-dropdown-link :href="route('dss_tools.index')">
+                                    {{ __('For Medical Case') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('dss_tools.vehicular')">
+                                    {{ __('For Vehicular Accidents') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('dss_tools.disaster')">
+                                    {{ __('For Disaster') }}
+                                </x-dropdown-link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+           
 
                 <!-- @if (Auth::user()->role == 0)
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">

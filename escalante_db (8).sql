@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 12, 2024 at 11:57 PM
+-- Generation Time: Dec 15, 2024 at 04:18 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -132,7 +132,7 @@ CREATE TABLE `disasters` (
 --
 
 INSERT INTO `disasters` (`id`, `date`, `rescue_team`, `place_of_incident`, `city`, `barangay`, `type`, `affected_infrastructure`, `casualties`, `is_approved`, `current_water_level`, `water_level_trend`, `intensity_level`, `aftershocks`, `typhoon_signal`, `eruption_type`, `eruption_intensity`, `involved_parties`, `triggering_event`, `nature_of_encounter`, `duration`, `created_at`, `updated_at`) VALUES
-(2, '2024-12-10', 'Delta', 'prk. puto', 'ESCALANTE CITY', 'MALASIBOG', 'Flood', 'School: Impassable, House: Damaged', 'Killed: 1, Injured: 1', 1, 'Knee Deep', 'Falling', 10.00, 1, '', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-10 21:12:40', '2024-12-11 18:00:22'),
+(2, '2024-12-10', 'Delta', 'prk. puto', 'ESCALANTE CITY', 'PAITAN', 'other', 'School: Impassable, House: Damaged', 'Killed: 1, Injured: 1', 1, 'Knee Deep', 'Falling', 10.00, 1, '', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-10 21:12:40', '2024-12-15 06:25:26'),
 (3, '2024-12-10', 'Alpha', 'prk. puto', 'ESCALANTE CITY', 'Old Poblacion', 'Flood', 'Roads: Flooded', 'Killed: 1', 1, 'Knee Deep', 'Rising', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-10 22:26:24', '2024-12-10 22:26:24'),
 (4, '2024-11-30', 'Bravo', 'prk. puto', 'ESCALANTE CITY', 'Old Poblacion', 'Flood', 'Roads: Flooded', 'Injured: 1', 1, 'Knee Deep', 'Rising', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-10 22:30:58', '2024-12-10 22:30:58'),
 (5, '2024-11-20', 'Bravo', 'prk. puto', 'ESCALANTE CITY', 'Old Poblacion', 'Flood', 'Roads: Flooded', 'Injured: 1', 1, 'Roof Top', 'Rising', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-10 22:31:45', '2024-12-11 06:33:09'),
@@ -145,7 +145,8 @@ INSERT INTO `disasters` (`id`, `date`, `rescue_team`, `place_of_incident`, `city
 (15, '2024-12-11', 'Charlie', 'prk. puto', 'ESCALANTE CITY', 'Buenavista', 'Flood', 'Roads: Flooded', 'Missing: 1', 1, 'Knee Deep', 'Rising', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-12 00:23:46', '2024-12-12 00:23:46'),
 (17, '2024-12-11', 'Charlie', 'prk. puto', 'ESCALANTE CITY', 'Dian-ay', 'Flood', 'Roads: Flooded', 'Missing: 1', 1, 'Knee Deep', 'Rising', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-12 00:46:10', '2024-12-12 00:46:10'),
 (18, '2024-12-13', 'Alpha', 'prk. puto', 'ESCALANTE CITY', 'Pinapugasan', 'Flood', 'Roads: Flooded', 'Killed: 1', 1, 'Chest Deep', 'Rising', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-12 12:52:40', '2024-12-12 12:52:40'),
-(21, '2024-12-12', 'Charlie', 'prk. puto', 'ESCALANTE CITY', 'Malasibog', 'Typhoon', 'Roads: Flooded', 'Missing: 1', 1, NULL, NULL, NULL, NULL, 'Signal No. 3: Significant wind damage', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-12 13:57:37', '2024-12-12 13:57:37');
+(21, '2024-12-12', 'Charlie', 'prk. puto', 'ESCALANTE CITY', 'OLD POBLACION', 'other', 'Roads: Flooded', 'Missing: 1', 1, NULL, NULL, NULL, NULL, 'Signal No. 3: Significant wind damage', NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-12 13:57:37', '2024-12-15 06:41:48'),
+(33, '2024-12-15', 'Delta', 'prk. puto', 'ESCALANTE CITY', 'MAGSAYSAY', 'igit', 'Roads: Flooded', 'Missing: 1', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-15 07:05:03', '2024-12-15 15:16:58');
 
 -- --------------------------------------------------------
 
@@ -165,6 +166,7 @@ CREATE TABLE `disaster_type` (
 INSERT INTO `disaster_type` (`id`, `type_name`) VALUES
 (3, 'Earthquake'),
 (1, 'Flood'),
+(20, 'igit'),
 (5, 'Rebel Encounter'),
 (2, 'Typhoon'),
 (4, 'Volcanic Eruption');
@@ -246,7 +248,7 @@ CREATE TABLE `medical_cases` (
 --
 
 INSERT INTO `medical_cases` (`id`, `date`, `rescue_team`, `city`, `place_of_incident`, `barangay`, `no_of_patients`, `chief_complaints`, `facility_name`, `created_at`, `updated_at`, `is_approved`) VALUES
-(2, '2024-04-06', 'Charlie', '', 'prk. makiangayon', 'Alimango', 1, 'body weaknesses', 'VGDH', '2024-09-21 21:57:45', '2024-10-02 17:34:07', 1),
+(2, '2024-04-06', 'Alpha', 'ESCALANTE CITY', 'prk. makiangayon', 'Alimango', 1, 'body weaknesses', 'VGDH', '2024-09-21 21:57:45', '2024-12-14 19:46:54', 1),
 (8, '2024-04-06', 'Charlie', '', 'public plaza', 'Balintawak', 1, 'dizziness and fainting', 'VGDH', '2024-09-22 00:10:58', '2024-10-02 17:37:42', 1),
 (15, '2024-04-16', 'Charlie', '', 'PBB', 'Balintawak', 1, 'difficulty of breathing', 'VGDH', '2024-09-22 00:53:22', '2024-10-02 17:39:20', 1),
 (16, '2024-04-16', 'Bravo', '', 'so. benit-agan', 'Buenavista', 1, 'body weaknesses (history of stroke)', 'VGDH', '2024-09-22 00:54:44', '2024-10-02 17:41:45', 1),
@@ -261,7 +263,9 @@ INSERT INTO `medical_cases` (`id`, `date`, `rescue_team`, `city`, `place_of_inci
 (32, '2024-01-01', 'Charlie', '', 'prk. puto', 'Balintawak', 1, 'iiiiiiiii', 'LODIFHI', '2024-11-17 20:01:13', '2024-11-17 20:01:13', 1),
 (33, '2019-01-31', 'Alpha', '', 'prk. puto', 'Buenavista', 1, 'q', 'LODIFHI', '2024-11-18 00:27:00', '2024-11-18 00:27:00', 1),
 (34, '2024-12-11', 'Alpha', 'ESCALANTE CITY', 'prk. puto', 'Tamlang', 1, 'sakit tyan', 'LODIFHI', '2024-12-10 21:06:32', '2024-12-10 21:06:32', 1),
-(35, '2024-11-13', 'Bravo', 'ESCALANTE CITY', 'prk. puto', 'Balintawak', 1, 'ss', 'LODIFHI', '2024-12-10 22:48:14', '2024-12-10 22:48:14', 1);
+(35, '2024-11-13', 'Bravo', 'ESCALANTE CITY', 'prk. puto', 'Balintawak', 1, 'ss', 'LODIFHI', '2024-12-10 22:48:14', '2024-12-10 22:48:14', 1),
+(38, '2024-12-15', 'Alpha', 'ESCALANTE CITY', 'prk. puto', 'Rizal', 1, 'hhhhhhhhhh', 'LODIFHI', '2024-12-14 19:39:43', '2024-12-14 19:47:13', 1),
+(40, '2024-12-15', 'Delta', 'ESCALANTE CITY', 'prk. puto', 'Magsaysay', 1, 'jjjjjjjjjjj', 'LODIFHI', '2024-12-14 19:44:39', '2024-12-14 19:44:39', 1);
 
 -- --------------------------------------------------------
 
@@ -305,6 +309,30 @@ CREATE TABLE `password_reset_tokens` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `rescue_teams`
+--
+
+CREATE TABLE `rescue_teams` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `team_name` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `rescue_teams`
+--
+
+INSERT INTO `rescue_teams` (`id`, `team_name`, `created_at`, `updated_at`) VALUES
+(2, 'Alpha', '2024-12-14 18:38:47', '2024-12-14 19:46:46'),
+(3, 'Bravo', '2024-12-14 18:38:54', '2024-12-14 18:38:54'),
+(4, 'Charlie', '2024-12-14 18:39:00', '2024-12-14 18:39:00'),
+(5, 'Delta', '2024-12-14 18:39:05', '2024-12-14 18:39:05'),
+(6, 'Enchong', '2024-12-14 19:48:08', '2024-12-14 19:48:08');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `sessions`
 --
 
@@ -322,7 +350,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('FG1aZOBgXdoV9aDMiEvxX0OboepjNaFusb4HTtks', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiUFZMYVBvTzh0U080SFhVZDNwZE4yM3FaRkFEdUU0SWNDY1RqYUJPMyI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjU3OiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2Nhc2VzP2JhcmFuZ2F5PVRBTUxBTkcmbW9udGg9MTIiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToyO30=', 1734044261);
+('a8GrhWL7WOpTgmHSQj3z9CqHGWpmUIH1MYJIBV8L', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiWXJJb1dOckRyZE9XaUd0OUc0UVRQZWxGU3FHcGVIRGZ4N3BHYXkwaCI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjYxOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvZ2V0LWRpc2FzdGVyLWRhdGE/ZW5kX2RhdGU9JnN0YXJ0X2RhdGU9Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mjt9', 1734275875);
 
 -- --------------------------------------------------------
 
@@ -348,7 +376,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `role`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'user', 'user@gmail.com', 1, NULL, '$2y$12$UucFnnfZLNCoCxZ48NpHvOlDqxnLbmL5rSAVC5IOMitO1eQL01R8y', 'LAi8KGKGetzGDnIBQpOASQ8de8RXF46QUCNAG6MXVCGF2okovm63prYs1hWt', '2024-09-17 18:15:06', '2024-11-19 04:32:05'),
-(2, 'admin', 'admin@gmail.com', 0, NULL, '$2y$12$IhO1dKAae5O4u.sQoVC0MeBcJmSpyaVcrI1a9tDpol/7vXcLqFM1i', 'um5N5PiYqytIiY2S6DHxnk01rVoZaZwOdqeSLRgiMxvAQ59PMKuQJpF6OW5I', '2024-09-17 19:27:14', '2024-09-17 19:27:14'),
+(2, 'admin', 'admin@gmail.com', 0, NULL, '$2y$12$IhO1dKAae5O4u.sQoVC0MeBcJmSpyaVcrI1a9tDpol/7vXcLqFM1i', 'k6b5skR8O1EazAOumI3SC6RyeQQKvfUe8FlTXg5z2mAHMCXEtED7WLpFtWhi', '2024-09-17 19:27:14', '2024-09-17 19:27:14'),
 (3, 'ben', 'ben@gmail.com', 1, NULL, '$2y$12$VxTidW8ftxPQrHD/DmHpOuzGvvsjzFraJcl1BislFluyH/W/2dP/W', NULL, '2024-09-18 04:05:35', '2024-10-02 05:55:45');
 
 -- --------------------------------------------------------
@@ -484,6 +512,12 @@ ALTER TABLE `password_reset_tokens`
   ADD PRIMARY KEY (`email`);
 
 --
+-- Indexes for table `rescue_teams`
+--
+ALTER TABLE `rescue_teams`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `sessions`
 --
 ALTER TABLE `sessions`
@@ -525,13 +559,13 @@ ALTER TABLE `barangays`
 -- AUTO_INCREMENT for table `disasters`
 --
 ALTER TABLE `disasters`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `disaster_type`
 --
 ALTER TABLE `disaster_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -549,13 +583,19 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `medical_cases`
 --
 ALTER TABLE `medical_cases`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `rescue_teams`
+--
+ALTER TABLE `rescue_teams`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `users`

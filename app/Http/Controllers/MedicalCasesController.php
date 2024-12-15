@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\MedicalCase;
+use App\Models\RescueTeam;
 use App\Models\VehicularAccident;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -75,7 +76,8 @@ class MedicalCasesController extends Controller
      */
     public function create()
     {
-        return view('medical_cases.create');
+        $rescueTeams = RescueTeam::all();
+        return view('medical_cases.create', compact('rescueTeams'));
     }
 
     /**
@@ -121,7 +123,8 @@ class MedicalCasesController extends Controller
      */
     public function edit(MedicalCase $medicalCase)
     {
-        return view('medical_cases.edit', compact('medicalCase'));
+        $rescueTeams = RescueTeam::all();
+        return view('medical_cases.edit', compact('medicalCase', 'rescueTeams'));
     }
 
     /**

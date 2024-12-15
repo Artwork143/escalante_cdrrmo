@@ -25,14 +25,15 @@
                             <label for="rescue_team" class="block text-sm font-medium text-gray-700">{{ __('Rescue Team') }}</label>
                             <select name="rescue_team" id="rescue_team"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                                <option value=""></option>
-                                @foreach(['Alpha', 'Bravo', 'Charlie', 'Delta'] as $team)
-                                <option value="{{ $team }}" {{ old('rescue_team', $vehicularAccident->rescue_team) == $team ? 'selected' : '' }}>
-                                    {{ $team }}
+                                <option value="">{{ __('Select a Rescue Team') }}</option>
+                                @foreach ($rescueTeams as $team)
+                                <option value="{{ $team->team_name }}" {{ old('rescue_team', $vehicularAccident->rescue_team ?? '') == $team->team_name ? 'selected' : '' }}>
+                                    {{ $team->team_name }}
                                 </option>
                                 @endforeach
                             </select>
                         </div>
+
 
                         <div class="mb-4">
                             <label for="city" class="block text-sm font-medium text-gray-700">{{ __('City') }}</label>

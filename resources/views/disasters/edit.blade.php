@@ -35,14 +35,23 @@
                         <!-- Disaster Type -->
                         <div class="mb-4">
                             <label for="type" class="block text-sm font-medium text-gray-700">{{ __('Disaster Type') }}</label>
-                            <select name="type" id="type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            <select name="type" id="type"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required onchange="toggleOtherInput(this)">
                                 <option value="">{{ __('Select Disaster Type') }}</option>
-                                <option value="Flood">Flood</option>
-                                <option value="Earthquake">Earthquake</option>
-                                <option value="Volcanic Eruption">Volcanic Eruption</option>
-                                <option value="Rebel Encounter">Rebel Encounter</option>
+                                @foreach ($disasterTypes as $disasterType)
+                                <option value="{{ $disasterType->type_name }}" {{ old('type', $disaster->type ?? '') == $disasterType->type_name ? 'selected' : '' }}>{{ $disasterType->type_name }}</option>
+                                @endforeach
+                                <!-- <option value="other">{{ __('Other') }}</option> -->
                             </select>
                         </div>
+
+                        <!-- <div id="other-disaster-type" class="mb-4 hidden">
+                            <label for="other_type" class="block text-sm font-medium text-gray-700">{{ __('Specify Disaster Type') }}</label>
+                            <input type="text" name="other_type" id="other_type"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="{{ __('Enter disaster type') }}">
+                        </div> -->
 
 
                         <!-- Rescue Team -->
@@ -50,11 +59,12 @@
                             <label for="rescue_team" class="block text-sm font-medium text-gray-700">{{ __('Rescue Team') }}</label>
                             <select name="rescue_team" id="rescue_team"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                                <option value=""></option>
-                                <option value="Alpha" {{ old('rescue_team', $disaster->rescue_team) == 'Alpha' ? 'selected' : '' }}>Alpha</option>
-                                <option value="Bravo" {{ old('rescue_team', $disaster->rescue_team) == 'Bravo' ? 'selected' : '' }}>Bravo</option>
-                                <option value="Charlie" {{ old('rescue_team', $disaster->rescue_team) == 'Charlie' ? 'selected' : '' }}>Charlie</option>
-                                <option value="Delta" {{ old('rescue_team', $disaster->rescue_team) == 'Delta' ? 'selected' : '' }}>Delta</option>
+                                <option value="">{{ __('Select a Rescue Team') }}</option>
+                                @foreach ($rescueTeams as $team)
+                                <option value="{{ $team->team_name }}" {{ old('rescue_team', $disaster->rescue_team ?? '') == $team->team_name ? 'selected' : '' }}>
+                                    {{ $team->team_name }}
+                                </option>
+                                @endforeach
                             </select>
                         </div>
 

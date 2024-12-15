@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight print-hidden">
-            {{ __('Disasters Management') }}
+            {{ __('Disasters DSS') }}
         </h2>
 
 
@@ -23,98 +23,42 @@
 
     <div class="py-12 print-adjust">
         <div class="{{ auth()->user()->role === 0 ? 'xl:max-w-[90rem]' : 'max-w-7xl' }} mx-auto sm:px-6 lg:px-8 relative">
-            <!-- Dropdown for selecting disaster -->
-            <div class="mb-4">
-                <form method="GET" action="{{ route('disasters.index') }}" id="disaster-filter-form">
-                    <!-- Hidden inputs to retain current filters -->
-                    <input type="hidden" name="start_date" value="{{ request('start_date') }}">
-                    <input type="hidden" name="end_date" value="{{ request('end_date') }}">
-                    <input type="hidden" name="search" value="{{ request('search') }}">
 
-                    <label for="disaster-select" class="block font-medium text-gray-700">Select Disaster Type:</label>
-                    <select
-                        id="disaster-select"
-                        name="type"
-                        onchange="document.getElementById('disaster-filter-form').submit()"
-                        class="w-1/6 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="" {{ is_null(request('type')) ? 'selected' : '' }}>All</option>
-                        @foreach ($disasterTypes as $type)
-                        <option value="{{ $type->type_name }}" {{ request('type') === $type->type_name ? 'selected' : '' }}>
-                            {{ $type->type_name }}
-                        </option>
-                        @endforeach
-                    </select>
-                </form>
+            <div class="p-5 bg-[#295F98] print-hidden">
 
-            </div>
+                <form method="GET" action="{{ route('dss_tools.disaster') }}" class="mb-4">
+                    <input type="hidden" name="type" value="{{ request('type') }}">
 
-            <div class="bg-white shadow-md sm:rounded-lg mb-1">
-                <div class="p-5 bg-[#295F98] print-hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        @if(request('type'))
-                        <h3 class="text-xl font-semibold text-white">{{ request('type') }} Cases</h3>
-                        @else
-                        <h3 class="text-xl font-semibold text-white">List of Disasters</h3>
-                        @endif
+                    <label for="month" class="block text-sm font-medium text-white mb-1">{{ __("Filter Date Range") }}</label>
+                    <div class="flex space-x-4 justify-between">
+                        <div>
+                            <input
+                                type="date"
+                                name="start_date"
+                                id="start_date"
+                                value="{{ request('start_date') }}"
+                                class="py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-                        <!-- Create button visible to both admins and non-admins -->
-                        <a href="{{ route('disasters.create') }}" class="inline-block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700">
-                            Create New Case
-                        </a>
-                    </div>
+                            <input
+                                type="date"
+                                name="end_date"
+                                id="end_date"
+                                value="{{ request('end_date') }}"
+                                class="py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-                    <form method="GET" action="{{ route('disasters.index') }}" class="mb-4">
-                        <input type="hidden" name="type" value="{{ request('type') }}">
-
-                        <label for="month" class="block text-sm font-medium text-white mb-1">{{ __("Filter Date Range") }}</label>
-                        <div class="flex space-x-4 justify-between">
-                            <div>
-                                <input
-                                    type="date"
-                                    name="start_date"
-                                    id="start_date"
-                                    value="{{ request('start_date') }}"
-                                    class="py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-
-                                <input
-                                    type="date"
-                                    name="end_date"
-                                    id="end_date"
-                                    value="{{ request('end_date') }}"
-                                    class="py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-
-                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
-                                    {{ __('Filter') }}
-                                </button>
-                            </div>
-
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search cases..." class=" w-1/4 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 grid grid-row-2 hover:bg-gray-200" />
+                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-300">
+                                {{ __('Filter') }}
+                            </button>
                         </div>
-                    </form>
-                </div>
 
-                <div class="p-6 text-gray-900 print-header">
-                    <!-- Add Header Information -->
-                    @if (request('start_date') && request('end_date'))
-                    <p class="mt-1 pt-1 mb-1 pb-1 border-b-2 border-b-gray-300 text-center hidden print-show">
-                        <span class="font-bold text-2xl">Disaster Case</span> <br>
-                        Response summary <span class="text-red-600 font-bold">{{ __("from ") }}
-                            {{ \Carbon\Carbon::parse(request('start_date'))->format('F d, Y') }}
-                            {{ __(" to ") }}
-                            {{ \Carbon\Carbon::parse(request('end_date'))->format('F d, Y') }}</span>
-                    </p>
-                    @endif
-                    <!-- Tables for different disasters -->
-                    @if($disasters->isEmpty())
-                    <p class="text-gray-500 text-center">No disasters found for the selected filters.</p>
-                    @else
-                    @include('partials.disaster-table', ['disasters' => $disasters])
-                    @endif
-                </div>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search cases..." class=" w-1/4 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 grid grid-row-2 hover:bg-gray-200" />
+                    </div>
+                </form>
             </div>
-<!--
+
+
             <div class="{{ auth()->user()->role === 0 ? 'flex' : 'hidden' }} print-hidden gap-3">
-                Pie chart section
+                <!-- Pie chart section -->
                 <div class="bg-white overflow-hidden shadow-md sm:rounded-lg mt-10 print-hidden">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold mb-4 mt-2">{{ __("Disasters by Type") }}</h3>
@@ -124,19 +68,19 @@
                     </div>
                 </div>
 
-                Bar chart section
+                <!-- Bar chart section -->
                 <div class="bg-white shadow-md sm:rounded-lg w-3/5 p-6 mt-10">
                     <h3 class="text-lg font-semibold mb-4 mt-2">{{ __("Ranking of Disasters (Most to Least)") }}</h3>
                     <canvas id="disasterRankingChart"></canvas>
 
-                    Suggestion Box
+                    <!-- Suggestion Box -->
                     <div id="suggestionBox" class="mt-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 hidden">
                         <p class="font-semibold">Focus on Disaster Type: <span id="focusDisaster"></span></p>
                         <p>This disaster type has the highest number of casualties and might require more attention and resources.</p>
                     </div>
                 </div>
             </div>
--->
+
             <div id="disasterDetails" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10 print-hidden">
                 <div class="mb-4 flex justify-between">
                     <h3 id="disasterTitle" class="text-lg font-semibold mb-2"></h3>

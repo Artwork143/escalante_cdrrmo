@@ -3,9 +3,11 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DssController;
 use App\Http\Controllers\DisasterController;
 use App\Http\Controllers\DisasterTypeController;
 use App\Http\Controllers\MedicalCasesController;
+use App\Http\Controllers\RescueTeamController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicularAccidentsController;
 use App\Models\Disaster;
@@ -51,6 +53,27 @@ Route::middleware('auth')->group(function () {
     Route::get('/disaster-data/{type}', [DisasterController::class, 'getDisasterData']);
     Route::get('/disasters/create', [DisasterController::class, 'create'])->name('disasters.create');
     Route::post('/disasters', [DisasterController::class, 'store'])->name('disasters.store');
+
+    // Routes for Disaster Types
+    Route::middleware(['auth'])->group(function () {
+        // Index: List all disaster types
+        Route::get('/disaster_type', [DisasterTypeController::class, 'index'])->name('disaster_type.index');
+
+        // Create: Show form to create a new disaster type
+        Route::get('/disaster_type/create', [DisasterTypeController::class, 'create'])->name('disaster_type.create');
+
+        // Store: Save new disaster type
+        Route::post('/disaster_type', [DisasterTypeController::class, 'store'])->name('disaster_type.store');
+
+        // Edit: Show form to edit a disaster type
+        Route::get('/disaster_type/{id}/edit', [DisasterTypeController::class, 'edit'])->name('disaster_type.edit');
+
+        // Update: Save changes to a disaster type
+        Route::put('/disaster_type/{id}', [DisasterTypeController::class, 'update'])->name('disaster_type.update');
+
+        // Destroy: Delete a disaster type
+        Route::delete('/disaster_type/{id}', [DisasterTypeController::class, 'destroy'])->name('disaster_type.destroy');
+    });
 
     // Combined API route for getting accidents and medical cases by barangay
     Route::get('/api/cases', function (Request $request) {
@@ -163,7 +186,33 @@ Route::middleware(['auth', 'rolemanager:admin'])->group(function () {
     Route::delete('/disasters/{id}', [DisasterController::class, 'destroy'])->name('disasters.destroy');
     Route::get('/disasters/{disaster}/edit', [DisasterController::class, 'edit'])->name('disasters.edit');
     Route::put('/disasters/{disaster}', [DisasterController::class, 'update'])->name('disasters.update');
+
+    Route::get('/medical_dss', [DssController::class, 'index'])->name('dss_tools.index');
+    Route::get('/vehicular_dss', [DssController::class, 'index2'])->name('dss_tools.vehicular');
+    Route::get('/disaster_dss', [DssController::class, 'index3'])->name('dss_tools.disaster');
 });
+
+    // Routes for Disaster Types
+    Route::middleware(['auth'])->group(function () {
+        // Index: List all disaster types
+        Route::get('/rescue_team', [RescueTeamController::class, 'index'])->name('rescue_team.index');
+
+        // Create: Show form to create a new disaster type
+        Route::get('/rescue_team/create', [RescueTeamController::class, 'create'])->name('rescue_team.create');
+
+        // Store: Save new disaster type
+        Route::post('/rescue_team', [RescueTeamController::class, 'store'])->name('rescue_team.store');
+
+        // Edit: Show form to edit a disaster type
+        Route::get('/rescue_team/{id}/edit', [RescueTeamController::class, 'edit'])->name('rescue_team.edit');
+
+        // Update: Save changes to a disaster type
+        Route::put('/rescue_team/{id}', [RescueTeamController::class, 'update'])->name('rescue_team.update');
+
+        // Destroy: Delete a disaster type
+        Route::delete('/rescue_team/{id}', [RescueTeamController::class, 'destroy'])->name('rescue_team.destroy');
+    });
+
 
 // API route
 Route::get('/get-barangay-cases', [MedicalCasesController::class, 'getBarangayCases']);
@@ -176,9 +225,6 @@ Route::get('/get-disaster-data', [DisasterController::class, 'getDisasterData'])
 Route::get('/get-disaster-details/{disasterType}', [DisasterController::class, 'getDisasterDetails']);
 
 Route::get('/yearly-medicals', [MedicalCasesController::class, 'getYearlyMedicals']);
-
-Route::get('/api/disaster-types', [DisasterTypeController::class, 'index']);
-
 
 
 // API route to get barangays with cases for the current month

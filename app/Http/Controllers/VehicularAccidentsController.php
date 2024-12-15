@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RescueTeam;
 use App\Models\VehicleDetail;
 use Illuminate\Http\Request;
 use App\Models\VehicularAccident;
@@ -76,7 +77,8 @@ class VehicularAccidentsController extends Controller
      */
     public function create()
     {
-        return view('vehicular_accidents.create');
+        $rescueTeams = RescueTeam::all();
+        return view('vehicular_accidents.create', compact('rescueTeams'));
     }
 
     /**
@@ -180,6 +182,8 @@ class VehicularAccidentsController extends Controller
         // Prepare vehicle details as a key-value pair for easier access in the form
         $vehicleDetails = $vehicularAccident->vehicleDetails->pluck('vehicle_detail', 'vehicle_type')->toArray();
 
+        $rescueTeams = RescueTeam::all();
+
         // Define the list of predefined causes
         $causes = [
             'Overspeeding',
@@ -199,7 +203,7 @@ class VehicularAccidentsController extends Controller
             'Lack of Signage'
         ];
 
-        return view('vehicular_accidents.edit', compact('vehicularAccident', 'vehicleDetails', 'causes'));
+        return view('vehicular_accidents.edit', compact('vehicularAccident', 'vehicleDetails', 'causes', 'rescueTeams'));
     }
 
     /**

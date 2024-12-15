@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Disaster;
 use App\Models\DisasterType;
+use App\Models\RescueTeam;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -95,7 +96,9 @@ class DisasterController extends Controller
     // Show form to create a new disaster case
     public function create()
     {
-        return view('disasters.create');
+        $disasterTypes = DisasterType::all();
+        $rescueTeams = RescueTeam::all();
+        return view('disasters.create', compact('rescueTeams', 'disasterTypes'));
     }
 
     // Store a new disaster case
@@ -123,11 +126,11 @@ class DisasterController extends Controller
         ]);
 
         // Determine the disaster type
-        $disasterType = $request->type === 'Others' ? $request->other_type : $request->type;
+        $disasterType = $request->type === 'other' ? $request->other_type : $request->type;
 
         // If "Others" is selected, save the custom type to the disaster_type table
-        if ($request->type === 'Others' && $request->other_type) {
-            \DB::table('disaster_type')->insertOrIgnore([
+        if ($request->type === 'other' && $request->other_type) {
+            DB::table('disaster_type')->insertOrIgnore([
                 'type_name' => $request->other_type
             ]);
         }
@@ -239,8 +242,10 @@ class DisasterController extends Controller
         $endDate = $request->input('end_date');
 
         // Example: Get disasters data between the given date range
-        $disasters = Disaster::whereBetween('date', [$startDate, $endDate])
-            ->select('type', DB::raw('COUNT(*) as total_casualties'))
+        $disasters = Disaster::select('type', DB::raw('COUNT(*) as total_casualties'))
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
+            })
             ->groupBy('type')
             ->orderBy('is_approved', 'asc')
             ->get();
@@ -254,7 +259,9 @@ class DisasterController extends Controller
         $endDate = $request->input('end_date');
 
         $details = Disaster::where('type', $disasterType)
-            ->whereBetween('date', [$startDate, $endDate])
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
+            })
             ->select('date', 'rescue_team', 'barangay', 'affected_infrastructure', 'casualties', 'type')
             ->get();
 
@@ -264,7 +271,9 @@ class DisasterController extends Controller
 
     public function edit(Disaster $disaster)
     {
-        return view('disasters.edit', compact('disaster'));
+        $rescueTeams = RescueTeam::all();
+        $disasterTypes = DisasterType::all();
+        return view('disasters.edit', compact('disaster', 'rescueTeams', 'disasterTypes'));
     }
 
     public function update(Request $request, Disaster $disaster)
