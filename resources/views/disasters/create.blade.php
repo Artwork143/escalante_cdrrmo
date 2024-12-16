@@ -44,13 +44,25 @@
                         <!-- Rescue Team -->
                         <div class="mb-4">
                             <label for="rescue_team" class="block text-sm font-medium text-gray-700">{{ __('Rescue Team') }}</label>
-                            <select name="rescue_team" id="rescue_team" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            <select name="rescue_team" id="rescue_team" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required onchange="toggleOtherRescueTeamInput()">
                                 <option value="">{{ __('Select a Rescue Team') }}</option>
                                 @foreach ($rescueTeams as $team)
                                 <option value="{{ $team->team_name }}">{{ $team->team_name }}</option>
                                 @endforeach
+                                <option value="other">{{ __('Other') }}</option>
                             </select>
                         </div>
+
+                        <div class="mb-4 hidden" id="other_rescue_team_wrapper">
+                            <label for="other_rescue_team" class="block text-sm font-medium text-gray-700">{{ __('New Rescue Team') }}</label>
+                            <input
+                                type="text"
+                                name="other_rescue_team"
+                                id="other_rescue_team"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="Enter new rescue team">
+                        </div>
+
 
                         <!-- City -->
                         <div class="mb-4">
@@ -500,6 +512,20 @@
                 otherInputDiv.classList.add('hidden');
                 // Clear the custom input field when not selecting "Other"
                 document.getElementById('other_type').value = '';
+            }
+        }
+
+        function toggleOtherRescueTeamInput() {
+            const rescueTeamSelect = document.getElementById('rescue_team');
+            const otherRescueTeamWrapper = document.getElementById('other_rescue_team_wrapper');
+            const otherRescueTeamInput = document.getElementById('other_rescue_team');
+
+            if (rescueTeamSelect.value === 'other') {
+                otherRescueTeamWrapper.classList.remove('hidden');
+                otherRescueTeamInput.setAttribute('required', 'required');
+            } else {
+                otherRescueTeamWrapper.classList.add('hidden');
+                otherRescueTeamInput.removeAttribute('required');
             }
         }
     </script>

@@ -92,6 +92,7 @@ class MedicalCasesController extends Controller
         $validated = $request->validate([
             'date' => 'required|date',
             'rescue_team' => 'required|string|max:255',
+            'other_rescue_team' => 'nullable|string|max:255|unique:rescue_teams,team_name',
             'place_of_incident' => 'required|string|max:255',
             'city' => 'required|string',
             'barangay' => 'required|string',
@@ -104,6 +105,21 @@ class MedicalCasesController extends Controller
         $validated['is_approved'] = Auth::user()->role === 0 ? true : false;
 
         $validated['barangay'] = ucwords(strtolower($validated['barangay']));  // Capitalize barangay name
+
+        $rescueTeamName = $request['rescue_team'];
+
+        // Check if the "Other" option was selected
+        if ($rescueTeamName === 'other') {
+            // Validate the new rescue team name
+            $rescueTeamName = $request['other_rescue_team'];
+
+            // Insert the new rescue team into the database
+            RescueTeam::create([
+                'team_name' => $rescueTeamName,
+            ]);
+        }
+
+        $validated['rescue_team'] = $rescueTeamName;
 
         // Create a new medical case
         MedicalCase::create($validated);

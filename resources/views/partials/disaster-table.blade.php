@@ -101,8 +101,8 @@
         </tbody>
     </table>
 
-   <!-- Bottom Content: Total count, Print Button, and Pagination -->
-@if (request('type') && request('start_date') && request('end_date') && $disasters->count() > 0)
+    <!-- Bottom Content: Total count, Print Button, and Pagination -->
+    @if (request('type') && request('start_date') && request('end_date') && $disasters->count() > 0)
     <p class="text-lg font-medium mt-4 border-t-2 border-t-gray-300 pt-2">
         {{ __("Total Disasters for this date range: ") }} {{ $disasters->count() }}
     </p>
@@ -114,16 +114,18 @@
         </button>
     </div>
 
-@elseif (request('start_date') && request('end_date') && $disasters->isEmpty())
+    @elseif (request('start_date') && request('end_date') && $disasters->isEmpty())
     <p>{{ __("No disasters found for this date range.") }}</p>
-@endif
+    @endif
 
-<!-- Pagination Links -->
-<div class="mt-4">
-    {{ $disasters->links() }}
-</div>
+    <!-- Pagination Links -->
+    <div class="mt-4">
+        {{ $disasters->links() }}
+    </div>
 
-@if (!request('start_date') && !request('end_date') && !request('type'))
+    @if (!request('start_date') && !request('end_date') && !request('type'))
+    @if(auth()->user()->role === 0)
     <p class="border-t-2 mt-4 border-t-gray-300 pt-2">{{ __("Please select a date range and type to filter the disasters you want to print.") }}</p>
-@endif
+    @endif
+    @endif
 </div>

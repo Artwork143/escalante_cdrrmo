@@ -81,17 +81,32 @@
                                 <x-dropdown-link :href="route('disasters.index')">
                                     {{ __('Disaster List') }}
                                 </x-dropdown-link>
+                                @if (Auth::user()->role == 0)
                                 <x-dropdown-link :href="route('disaster_type.index')">
                                     {{ __('Disaster Type') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('rescue_team.index')">
                                     {{ __('Rescue Team') }}
                                 </x-dropdown-link>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
 
+                
+           
+
+                <!-- @if (Auth::user()->role == 0)
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('medical_cases.yearly')" :active="request()->routeIs('medical_cases.yearly')">
+                        {{ __('Yearly Reports') }}
+                    </x-nav-link>
+                </div>
+                @endif -->
+
+                <!-- Conditional Navigation for Admin (Users Management) -->
+                @if (Auth::user()->role == 0)
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex pt-[21px]">
                     <div x-data="{ open: false }" class="relative">
                         <x-nav-link
@@ -123,18 +138,7 @@
                         </div>
                     </div>
                 </div>
-           
 
-                <!-- @if (Auth::user()->role == 0)
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('medical_cases.yearly')" :active="request()->routeIs('medical_cases.yearly')">
-                        {{ __('Yearly Reports') }}
-                    </x-nav-link>
-                </div>
-                @endif -->
-
-                <!-- Conditional Navigation for Admin (Users Management) -->
-                @if (Auth::user()->role == 0)
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('admin')" :active="request()->routeIs('admin')">
                         {{ __('Users') }}

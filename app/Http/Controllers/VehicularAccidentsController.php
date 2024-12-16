@@ -90,6 +90,7 @@ class VehicularAccidentsController extends Controller
         $request->validate([
             'date' => 'required|date',
             'rescue_team' => 'required|string',
+            'other_rescue_team' => 'nullable|string|max:255|unique:rescue_teams,team_name',
             'place_of_incident' => 'required|string',
             'city' => 'required|string',
             'barangay' => 'required|string',
@@ -109,10 +110,28 @@ class VehicularAccidentsController extends Controller
             ? $request->other_cause // Use the "Other" input value if "Other" is selected
             : $request->cause_of_incident;
 
+
+        $rescueTeamName2 = $request->rescue_team === 'other'
+            ? $request->other_rescue_team
+            : $request->rescue_team;
+
+            $rescueTeamName = $request['rescue_team'];
+
+        // Check if the "Other" option was selected
+        if ($rescueTeamName === 'other') {
+            // Validate the new rescue team name
+            $rescueTeamName = $request['other_rescue_team'];
+
+            // Insert the new rescue team into the database
+            RescueTeam::create([
+                'team_name' => $rescueTeamName,
+            ]);
+        }
+
         // Create the vehicular accident record
         $accident = VehicularAccident::create([
             'date' => $request->date,
-            'rescue_team' => $request->rescue_team,
+            'rescue_team' => $rescueTeamName2,
             'place_of_incident' => $request->place_of_incident,
             'city' => $request->city,
             'barangay' => $request->barangay,

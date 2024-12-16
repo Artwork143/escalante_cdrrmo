@@ -167,7 +167,9 @@ use Carbon\Carbon;
                     @endif
 
                     @if (!request('start_date') && !request('end_date'))
+                    @if(auth()->user()->role === 0)
                     <p class="border-t-2 mt-4 border-t-gray-300 pt-2">{{ __("Please select a date range you want to print.") }}</p>
+                    @endif
                     @endif
 
                     <!-- Pagination Links -->

@@ -158,7 +158,9 @@ use Carbon\Carbon;
                     @endif
 
                     @if (!request('start_date') && !request('end_date'))
+                    @if(auth()->user()->role === 0)
                     <p class="border-t-2 mt-4 border-t-gray-300 pt-2">{{ __("Please select a date range you want to print.") }}</p>
+                    @endif
                     @endif
 
                     <!-- Pagination Links -->
@@ -232,7 +234,7 @@ use Carbon\Carbon;
                 </div>
 
             </div>
-<!--
+            <!--
             <div class="{{ auth()->user()->role === 0 ? 'flex' : 'hidden' }} print-hidden gap-3">
                Pie chart section 
                 <div class="bg-white overflow-hidden shadow-md sm:rounded-lg mt-10 print-hidden">

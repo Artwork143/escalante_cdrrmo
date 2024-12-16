@@ -12,6 +12,11 @@
                     <!-- Button to create new rescue team -->
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">{{ __("List of Rescue Teams") }}</h3>
+                        @if (session('error'))
+                        <div class="alert alert-danger bg-red-500 text-white w-1/2 mb-4 pl-4">
+                            {{ session('error') }}
+                        </div>
+                        @endif
                         <a href="{{ route('rescue_team.create') }}" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700">
                             {{ __('Create New Rescue Team') }}
                         </a>

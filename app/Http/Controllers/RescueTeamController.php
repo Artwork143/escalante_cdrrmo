@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\RescueTeam;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RescueTeamController extends Controller
 {
@@ -87,9 +88,22 @@ class RescueTeamController extends Controller
      */
     public function destroy($id)
     {
-        $RescueTeam = RescueTeam::findOrFail($id);
-        $RescueTeam->delete();
+        // Find the rescue team record
+        $rescueTeam = RescueTeam::findOrFail($id);
 
-        return redirect()->route('rescue_team.index');
+        // Check if the rescue team is being used in related tables
+        $isUsedInDisasters = DB::table('disasters')->where('rescue_team', $rescueTeam->team_name)->exists();
+        $isUsedInMedicalCases = DB::table('medical_cases')->where('rescue_team', $rescueTeam->team_name)->exists();
+        $isUsedInVehicularAccidents = DB::table('vehicular_accidents')->where('rescue_team', $rescueTeam->team_name)->exists();
+
+        if ($isUsedInDisasters || $isUsedInMedicalCases || $isUsedInVehicularAccidents) {
+            // Redirect back with an error message
+            return redirect()->route('rescue_team.index')->with('error', "The rescue team '{$rescueTeam->team_name}' is currently in use in related records (disasters, medical cases, or vehicular accidents). Please reassign or remove references to this rescue team before deletion.");
+        }
+
+        // Delete the rescue team if not in use
+        $rescueTeam->delete();
+
+        return redirect()->route('rescue_team.index')->with('success', 'Rescue team deleted successfully.');
     }
 }

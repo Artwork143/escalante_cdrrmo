@@ -108,6 +108,7 @@ class DisasterController extends Controller
         $request->validate([
             'date' => 'required|date',
             'rescue_team' => 'required|string|max:255',
+            'other_rescue_team' => 'nullable|string|max:255|unique:rescue_teams,team_name',
             'place_of_incident' => 'required|string|max:255',
             'type' => 'required|string|max:255',
             'other_type' => 'nullable|string|max:255', // Validate the custom disaster type
@@ -132,6 +133,19 @@ class DisasterController extends Controller
         if ($request->type === 'other' && $request->other_type) {
             DB::table('disaster_type')->insertOrIgnore([
                 'type_name' => $request->other_type
+            ]);
+        }
+
+        $rescueTeamName = $request['rescue_team'];
+
+        // Check if the "Other" option was selected
+        if ($rescueTeamName === 'other') {
+            // Validate the new rescue team name
+            $rescueTeamName = $request['other_rescue_team'];
+
+            // Insert the new rescue team into the database
+            RescueTeam::create([
+                'team_name' => $rescueTeamName,
             ]);
         }
 
@@ -189,6 +203,7 @@ class DisasterController extends Controller
         // Pre-process data
         $data = $request->all();
         $data['type'] = $disasterType; // Use the determined disaster type
+        $data['rescue_team'] = $rescueTeamName;
         $data['is_approved'] = Auth::user()->role === 0; // Set approval based on user role
         $data['barangay'] = ucwords(strtolower($request->barangay)); // Format barangay name
         $data['casualties'] = implode(', ', $formattedCasualties); // Store casualties as formatted string
