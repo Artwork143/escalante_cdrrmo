@@ -168,7 +168,7 @@
                         const disasterDetails = document.getElementById('disasterDetails');
                         const disasterTitle = document.getElementById('disasterTitle');
                         const tableBody = document.getElementById('disasterTableBody');
-                        const suggestionBox2 = document.getElementById('suggestionBox2'); // Assuming this exists in the HTML
+                        const suggestionBox2 = document.getElementById('suggestionBox2');
 
                         // Update title
                         disasterTitle.innerText = `Details for ${disasterType}`;
@@ -195,14 +195,18 @@
 
                         // Populate table rows
                         tableBody.innerHTML = details.map(detail => `
-                        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
-                            <td class="px-6 py-4 whitespace-nowrap">${detail.date}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${detail.rescue_team}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${detail.barangay}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${detail.affected_infrastructure}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${detail.casualties}</td>
-                        </tr>
-                    `).join('');
+        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
+            <td class="px-6 py-4 whitespace-nowrap">${detail.date}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${detail.rescue_team}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${detail.barangay}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${detail.affected_infrastructure}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${detail.casualties}</td>
+        </tr>
+    `).join('');
+
+                        // Ensure Print Button Passes disasterType
+                        const printButton = disasterDetails.querySelector('button');
+                        printButton.setAttribute('onclick', `printBarangayCases('${disasterType}')`);
 
                         // Show the table
                         disasterDetails.classList.remove('hidden');
@@ -212,6 +216,7 @@
                             behavior: 'smooth'
                         });
                     }
+
 
                     // Modify the onClick in both chart render functions
                     function renderPieChart(labels, values, backgroundColors) {
@@ -314,7 +319,7 @@
         }
 
 
-        function printBarangayCases() {
+        function printBarangayCases(selectedCalamity) {
             // Get the table's HTML
             const table = document.querySelector('#disasterTableBody').parentElement.outerHTML;
 
@@ -375,7 +380,7 @@
                     </div>
                     <img src="{{ asset('images/logo.png') }}" alt="Logo">
                 </div>
-                <h2>Details for Selected Calamity</h2>
+                <h2>Details for ${selectedCalamity}</h2>
                 ${table}
             </body>
         </html>
