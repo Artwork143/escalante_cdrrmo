@@ -332,7 +332,16 @@ class MedicalCasesController extends Controller
             ->where('is_approved', 1)
             ->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json($barangayDetails);
+        $detailsPrint = MedicalCase::where('barangay', $barangay)
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
+            })
+            ->get();
+
+        return response()->json([
+            'barangayDetails' => $barangayDetails,
+            'detailsPrint' => $detailsPrint,
+        ]);
     }
 
 

@@ -403,14 +403,14 @@
                     if (data.detailsPrint) {
                         // Create the table rows dynamically from the unpaginated data
                         const tableRows = data.detailsPrint.map(detail => `
-                    <tr>
-                        <td style="border: 1px solid #ddd; padding: 8px;">${detail.date}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px;">${detail.rescue_team}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px;">${detail.barangay}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px;">${detail.affected_infrastructure}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px;">${detail.casualties}</td>
-                    </tr>
-                `).join('');
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.date}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.rescue_team}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.barangay}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.affected_infrastructure}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.casualties}</td>
+                            </tr>
+                        `).join('');
 
                         // Create the new window for printing
                         const printWindow = window.open('', '', 'height=600,width=800');

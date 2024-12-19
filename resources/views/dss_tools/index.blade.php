@@ -190,30 +190,39 @@ use Carbon\Carbon;
                         fetch(`/get-barangay-details/${barangay}?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}&page=${page}`)
                             .then(response => response.json())
                             .then(data => {
-                                displayBarangayDetails(barangay, data.data);
-                                renderPaginationControls(data, barangay);
+                                displayBarangayDetails(barangay, data.barangayDetails, data.detailsPrint);
+                                renderPaginationControls(data.barangayDetails, barangay);
                             });
                     };
 
                     // Display barangay details in the table
-                    function displayBarangayDetails(barangay, cases) {
+                    function displayBarangayDetails(barangay, barangayDetails, detailsPrint) {
                         document.getElementById('barangayDetails').classList.remove('hidden');
+                        const details = document.getElementById('barangayDetails');
                         document.getElementById('barangayTitle').innerText = `Details of cases for Brgy. ${barangay}`;
                         const tableBody = document.getElementById('barangayTableBody');
-                        tableBody.innerHTML = cases.map(caseItem => `
-                        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
-                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
-                            <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
-                            <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
-                        </tr>
-                    `).join('');
+                        tableBody.innerHTML = barangayDetails.data.map(caseItem => `
+                            <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
+                                <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
+                                <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
+                                <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
+                            </tr>
+                        `).join('');
+
+                    
                         // Scroll to footer
                         document.getElementById('pageFooter').scrollIntoView({
                             behavior: 'smooth'
                         });
+                        // Ensure Print Button Passes the disasterType and non-paginated detailsPrint data
+                        const printButton = details.querySelector('button');
+                        printButton.setAttribute(
+                            'onclick',
+                            `printBarangayCases('${barangay}', ${JSON.stringify(detailsPrint)})`
+                        );
                     }
 
                     // Attach renderPaginationControls to the window object for global access
@@ -346,83 +355,115 @@ use Carbon\Carbon;
 
 
         //Print function for DetailedBarangay Table only
-        function printBarangayCases() {
-            // Get the table's HTML
-            const table = document.querySelector('#barangayTableBody').parentElement.outerHTML;
+        function printBarangayCases(barangay) {
+    // Fetch unpaginated barangay data from the server
+    fetch(`/get-barangay-details/${barangay}?unpaginated=true`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.detailsPrint) {
+                // Create the table rows dynamically from the unpaginated data
+                const tableRows = data.detailsPrint.map(caseItem => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
+                            <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
+                            <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.chief_complaints}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
+                    </tr>
+                `).join('');
 
-            // Create a new window
-            const printWindow = window.open('', '', 'height=600,width=800');
+                // Create the new window for printing
+                const printWindow = window.open('', '', 'height=600,width=800');
 
-            // Write the necessary HTML to the new window
-            printWindow.document.write(`
-        <html>
-            <head>
-                <title>Print Barangay Cases</title>
-                <style>
-                    /* Add any styles you want for the printed page */
-                    body {
-                        font-family: Arial, sans-serif;
-                        margin: 20px;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-                    th, td {
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 20px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                    .header img {
-                        width: 100px;
-                        max-width: 100px;
-                        height: auto;
-                    }
-                    .header p {
-                        margin: 0;
-                        line-height: 1.4;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <img src="{{ asset('images/escaLogo.jpg') }}" alt="Esca Logo">
-                    <div class="mx-4">
-                        <p class="font-bold">
-                            REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
-                        </p>
-                        <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
-                        <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
-                        <p class="text-red-600">09152627121 | 09089376724</p>
-                    </div>
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo">
-                </div>
-                <h2>Medical Cases Per Barangay</h2>
-                ${table}
-            </body>
-        </html>
-    `);
+                // Write the necessary HTML to the new window
+                printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>Print Barangay Cases</title>
+                            <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    margin: 20px;
+                                }
+                                table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-top: 20px;
+                                }
+                                th, td {
+                                    border: 1px solid #ddd;
+                                    padding: 8px;
+                                    text-align: left;
+                                }
+                                th {
+                                    background-color: #f2f2f2;
+                                }
+                                .header {
+                                    text-align: center;
+                                    margin-bottom: 20px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                }
+                                .header img {
+                                    width: 100px;
+                                    max-width: 100px;
+                                    height: auto;
+                                }
+                                .header p {
+                                    margin: 0;
+                                    line-height: 1.4;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <img src="{{ asset('images/escaLogo.jpg') }}" alt="Esca Logo">
+                                <div class="mx-4">
+                                    <p class="font-bold">
+                                        REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
+                                    </p>
+                                    <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
+                                    <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
+                                    <p class="text-red-600">09152627121 | 09089376724</p>
+                                </div>
+                                <img src="{{ asset('images/logo.png') }}" alt="Logo">
+                            </div>
+                            <h2>Medical Cases Per Barangay</h2>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Rescue Team</th>
+                                        <th>Place of Incident</th>
+                                        <th>No. of Patients</th>
+                                        <th>Chief Complaints</th>
+                                        <th>Facility Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </body>
+                    </html>
+                `);
 
-            // Close the document to ensure all resources are loaded
-            printWindow.document.close();
+                // Close the document and trigger print
+                printWindow.document.close();
+                printWindow.onload = function () {
+                    printWindow.focus();
+                    printWindow.print();
+                    printWindow.close();
+                };
+            } else {
+                console.error('No barangay cases data found');
+            }
+        })
+        .catch(error => console.error('Error fetching unpaginated barangay cases:', error));
+}
 
-            // Wait for the content to load before printing
-            printWindow.onload = function() {
-                printWindow.focus();
-                printWindow.print();
-                printWindow.close();
-            };
-        }
     </script>
 
 
