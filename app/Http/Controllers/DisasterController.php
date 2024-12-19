@@ -54,6 +54,11 @@ class DisasterController extends Controller
             });
         }
 
+        $disastersQuery->when(!$isAdmin, function ($query) {
+            return $query->where('is_approved', 1); // Non-admin users only see approved cases
+        })
+            ->orderBy('is_approved', 'asc');
+
         // Pagination
         $disasters = $disastersQuery->paginate(5)->appends([
             'type' => $selectedType,
@@ -62,7 +67,15 @@ class DisasterController extends Controller
             'search' => $search
         ]);
 
-        return view('disasters.index', compact('disasterTypes', 'disasters'));
+        $totalCases = $disastersQuery->where('is_approved', 1)->count();
+
+        // Retrieve all cases without pagination for printing
+        $disastersForPrint = $disastersQuery->paginate($totalCases)->appends([
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ]);
+
+        return view('disasters.index', compact('disasterTypes', 'disasters', 'disastersForPrint', 'totalCases'));
     }
 
     // Destroy a disaster case
@@ -272,15 +285,34 @@ class DisasterController extends Controller
     {
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $page = $request->input('page', 1); // Default to the first page
+        $perPage = 5; // Number of items per page
+        $search = $request->input('search'); // Search query
 
+        // Fetch paginated disaster details
         $details = Disaster::where('type', $disasterType)
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date', [$startDate, $endDate]);
             })
-            ->select('date', 'rescue_team', 'barangay', 'affected_infrastructure', 'casualties', 'type')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('rescue_team', 'like', '%' . $search . '%')
+                        ->orWhere('barangay', 'like', '%' . $search . '%')
+                        ->orWhere('affected_infrastructure', 'like', '%' . $search . '%');
+                });
+            })
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $detailsPrint = Disaster::where('type', $disasterType)
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
+            })
             ->get();
 
-        return response()->json($details);
+            return response()->json([
+                'details' => $details,
+                'detailsPrint' => $detailsPrint,
+            ]);
     }
 
 

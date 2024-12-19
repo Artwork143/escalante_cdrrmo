@@ -97,7 +97,7 @@
                     <!-- Add Header Information -->
                     @if (request('start_date') && request('end_date'))
                     <p class="mt-1 pt-1 mb-1 pb-1 border-b-2 border-b-gray-300 text-center hidden print-show">
-                        <span class="font-bold text-2xl">Disaster Case</span> <br>
+                        <span class="font-bold text-2xl">{{ request('type') }} Case</span> <br>
                         Response summary <span class="text-red-600 font-bold">{{ __("from ") }}
                             {{ \Carbon\Carbon::parse(request('start_date'))->format('F d, Y') }}
                             {{ __(" to ") }}
