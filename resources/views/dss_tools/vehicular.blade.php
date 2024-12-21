@@ -84,7 +84,7 @@ use Carbon\Carbon;
             </div>
 
             <!-- Detailed Table Section: Initially hidden -->
-            <div id="barangayDetails" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10 print-hidden">
+            <div id="barangayDetails" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10">
                 <div class="mb-4 flex justify-between">
                     <h3 id="barangayTitle" class="text-lg font-semibold mb-4 mt-2"></h3>
                     <input
@@ -122,6 +122,29 @@ use Carbon\Carbon;
                     </button>
                 </div>
             </div>
+
+            <div id="barangayDetailsNonPaginated" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10 print-show">
+                <div class="mb-4 flex justify-between">
+                    <h3 id="barangayTitleNonPaginated" class="text-lg font-semibold mb-4 mt-2"></h3>
+                </div>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rescue Team</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Place of Incident</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Patients</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cause of Incident</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle/s Involved</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Facility Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="barangayTableBodyNonPaginated" class="bg-white divide-y divide-gray-200">
+                        <!-- Table rows will be inserted here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
 
@@ -174,6 +197,7 @@ use Carbon\Carbon;
                                         const index = item[0].index;
                                         const barangay = labels[index];
                                         loadBarangayDetails(barangay, 1); // Start from page 1
+                                        loadBarangayDetails2(barangay);
                                     }
                                 }
                             }
@@ -189,6 +213,34 @@ use Carbon\Carbon;
                                 renderPaginationControls(data, barangay);
                             });
                     };
+
+                    window.loadBarangayDetails2 = function(barangay) {
+                        fetch(`/get-barangay-accidents2/${barangay}?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                displayBarangayDetails2(barangay, data.data);
+                            });
+                    };
+
+                    function displayBarangayDetails2(barangay, cases) {
+                        // document.getElementById('barangayDetailsNonPaginated').classList.remove('hidden');
+                        document.getElementById('barangayTitleNonPaginated').innerText = `Details of accidents for Brgy. ${barangay}`;
+                        const tableBody = document.getElementById('barangayTableBodyNonPaginated');
+                        tableBody.innerHTML = cases.map(caseItem => `
+                        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.rescue_team}</td>
+                            <td class="px-6 py-4 whitespace-nowrap capitalize text-wrap">${caseItem.place_of_incident}, Brgy. ${caseItem.barangay}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.no_of_patients}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.cause_of_incident}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.vehicles_involved}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${caseItem.facility_name}</td>
+                        </tr>
+                    `).join('');
+                        document.getElementById('pageFooter').scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
 
                     // Display barangay details in the table
                     function displayBarangayDetails(barangay, cases) {
@@ -287,6 +339,7 @@ use Carbon\Carbon;
                                         const index = item[0].index;
                                         const barangay = rankingLabels[index];
                                         loadBarangayDetails(barangay, 1); // Start from page 1
+                                        loadBarangayDetails2(barangay);
                                     }
                                 }
                             }
@@ -311,8 +364,26 @@ use Carbon\Carbon;
             const tableBody = document.getElementById('barangayTableBody');
             const rows = tableBody.getElementsByTagName('tr');
 
+            const tableBody2 = document.getElementById('barangayTableBodyNonPaginated');
+            const rows2 = tableBody2.getElementsByTagName('tr');
+
             // Loop through each row and toggle its visibility based on the search term
             for (let row of rows) {
+                // Get all cells in the current row
+                const cells = row.getElementsByTagName('td');
+
+                // Combine the text content of all cells for search comparison
+                const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+
+                // Check if the row text contains the search term
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = ''; // Show row
+                } else {
+                    row.style.display = 'none'; // Hide row
+                }
+            }
+
+            for (let row of rows2) {
                 // Get all cells in the current row
                 const cells = row.getElementsByTagName('td');
 
@@ -331,7 +402,8 @@ use Carbon\Carbon;
         //Print function for DetailedBarangay Table only
         function printBarangayCases() {
             // Get the table's HTML
-            const table = document.querySelector('#barangayTableBody').parentElement.outerHTML;
+            const title = document.querySelector('#barangayTitleNonPaginated').parentElement.outerHTML;
+            const table = document.querySelector('#barangayTableBodyNonPaginated').parentElement.outerHTML;
 
             // Create a new window
             const printWindow = window.open('', '', 'height=600,width=800');
@@ -390,7 +462,7 @@ use Carbon\Carbon;
                     </div>
                     <img src="{{ asset('images/logo.png') }}" alt="Logo">
                 </div>
-                <h2>Vehicular Accidents Per Barangay</h2>
+                <h2>${title}</h2>
                 ${table}
             </body>
         </html>

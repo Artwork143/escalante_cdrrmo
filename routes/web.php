@@ -220,6 +220,7 @@ Route::get('/get-barangay-details/{barangay}', [MedicalCasesController::class, '
 
 Route::get('/get-barangay-accidents', [VehicularAccidentsController::class, 'getBarangayCases']);
 Route::get('/get-barangay-accidents/{barangay}', [VehicularAccidentsController::class, 'getBarangayDetails']);
+Route::get('/get-barangay-accidents2/{barangay}', [VehicularAccidentsController::class, 'getBarangayDetails2']);
 
 Route::get('/get-disaster-data', [DisasterController::class, 'getDisasterData']);
 Route::get('/get-disaster-details/{disasterType}', [DisasterController::class, 'getDisasterDetails']);
