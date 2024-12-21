@@ -217,6 +217,7 @@ Route::middleware(['auth', 'rolemanager:admin'])->group(function () {
 // API route
 Route::get('/get-barangay-cases', [MedicalCasesController::class, 'getBarangayCases']);
 Route::get('/get-barangay-details/{barangay}', [MedicalCasesController::class, 'getBarangayDetails']);
+Route::get('/get-barangay-details2/{barangay}', [MedicalCasesController::class, 'getBarangayDetails2']);
 
 Route::get('/get-barangay-accidents', [VehicularAccidentsController::class, 'getBarangayCases']);
 Route::get('/get-barangay-accidents/{barangay}', [VehicularAccidentsController::class, 'getBarangayDetails']);
@@ -224,6 +225,7 @@ Route::get('/get-barangay-accidents2/{barangay}', [VehicularAccidentsController:
 
 Route::get('/get-disaster-data', [DisasterController::class, 'getDisasterData']);
 Route::get('/get-disaster-details/{disasterType}', [DisasterController::class, 'getDisasterDetails']);
+Route::get('/get-disaster-details2/{disasterType}', [DisasterController::class, 'getDisasterDetails2']);
 
 Route::get('/yearly-medicals', [MedicalCasesController::class, 'getYearlyMedicals']);
 

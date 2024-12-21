@@ -126,6 +126,33 @@
                 </div>
             </div>
 
+
+            <div id="disasterDetailsNonPaginated" class="hidden bg-white shadow-md sm:rounded-lg p-6 mt-10">
+                <div class="mb-4 flex justify-between">
+                    <h3 id="disasterTitleNonPaginated" class="text-lg font-semibold mb-2"></h3>
+                </div>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rescue Team</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barangay</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Affected Infrastructure</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Casualties</th>
+                        </tr>
+                    </thead>
+                    <tbody id="disasterTableBodyNonPaginated" class="bg-white divide-y divide-gray-200">
+                        <!-- Rows will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <div class="hidden flex-col mt-1 p-1 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700" id="suggest">
+                    <p id="suggestionBox2" class="font-semibold">
+                    </p>
+                    <p>This barangay has the highest number of cases and might require more attention and resources.</p>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -164,8 +191,8 @@
                         fetch(`/get-disaster-details/${disasterType}?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}&page=${page}`)
                             .then(response => response.json())
                             .then(data => {
-                                displayDisasterDetails(disasterType, data.details, data.detailsPrint);
-                                renderPaginationControls(data.details, disasterType);
+                                displayDisasterDetails(disasterType, data.data);
+                                renderPaginationControls(data, disasterType);
                             })
                             .catch(error => console.error('Error fetching disaster details:', error));
                     }
@@ -230,25 +257,23 @@
                         paginationContainer.appendChild(paginationControls);
                     };
 
-                    function displayDisasterDetails(disasterType, details, detailsPrint) {
+                    function displayDisasterDetails(disasterType, details) {
                         const disasterDetails = document.getElementById('disasterDetails');
                         const disasterTitle = document.getElementById('disasterTitle');
                         const tableBody = document.getElementById('disasterTableBody');
-                        const suggestionBox2 = document.getElementById('suggestionBox2');
+                        const suggestionBox2 = document.getElementById('suggestionBox2'); // Assuming this exists in the HTML
 
                         // Update title
                         disasterTitle.innerText = `Details for ${disasterType}`;
 
-                        // Ensure details is an array (paginated `data` property)
-                        if (!details || !Array.isArray(details.data)) {
-                            console.error('Details data is invalid:', details);
-                            return;
-                        }
-
-                        // Find duplicate barangays from paginated data
+                        // Find duplicate barangays
                         const barangayCount = {};
-                        details.data.forEach(detail => {
-                            barangayCount[detail.barangay] = (barangayCount[detail.barangay] || 0) + 1;
+                        details.forEach(detail => {
+                            if (barangayCount[detail.barangay]) {
+                                barangayCount[detail.barangay]++;
+                            } else {
+                                barangayCount[detail.barangay] = 1;
+                            }
                         });
 
                         // Get list of barangays that appear more than once
@@ -259,39 +284,87 @@
                             suggestionBox2.innerHTML = `Focus on this Barangay: ${duplicateBarangays.join(', ')}`;
                             document.getElementById('suggest').classList.add('flex');
                             document.getElementById('suggest').classList.remove('hidden');
-                        } else {
-                            suggestionBox2.innerHTML = '';
-                            document.getElementById('suggest').classList.add('hidden');
-                            document.getElementById('suggest').classList.remove('flex');
                         }
 
-                        // Populate table rows with paginated data
-                        tableBody.innerHTML = details.data.map(detail => `
-        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
-            <td class="px-6 py-4 whitespace-nowrap">${detail.date}</td>
-            <td class="px-6 py-4 whitespace-nowrap">${detail.rescue_team}</td>
-            <td class="px-6 py-4 whitespace-nowrap">${detail.barangay}</td>
-            <td class="px-6 py-4 whitespace-nowrap">${detail.affected_infrastructure}</td>
-            <td class="px-6 py-4 whitespace-nowrap">${detail.casualties}</td>
-        </tr>
-    `).join('');
-
-                        // Ensure Print Button Passes the disasterType and non-paginated detailsPrint data
-                        const printButton = disasterDetails.querySelector('button');
-                        printButton.setAttribute(
-                            'onclick',
-                            `printBarangayCases('${disasterType}', ${JSON.stringify(detailsPrint)})`
-                        );
+                        // Populate table rows
+                        tableBody.innerHTML = details.map(detail => `
+                        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.rescue_team}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.barangay}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.affected_infrastructure}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.casualties}</td>
+                        </tr>
+                    `).join('');
 
                         // Show the table
                         disasterDetails.classList.remove('hidden');
 
                         // Scroll to the details
                         disasterDetails.scrollIntoView({
-                            behavior: 'smooth',
+                            behavior: 'smooth'
                         });
                     }
 
+
+                    function loadDisasterDetails2(disasterType) {
+                        fetch(`/get-disaster-details2/${disasterType}?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                displayDisasterDetails2(disasterType, data.data);
+                            })
+                            .catch(error => console.error('Error fetching disaster details:', error));
+                    }
+
+
+                    function displayDisasterDetails2(disasterType, details) {
+                        const disasterDetails = document.getElementById('disasterDetailsNonPaginated');
+                        const disasterTitle = document.getElementById('disasterTitleNonPaginated');
+                        const tableBody = document.getElementById('disasterTableBodyNonPaginated');
+                        const suggestionBox2 = document.getElementById('suggestionBox2'); // Assuming this exists in the HTML
+
+                        // Update title
+                        disasterTitle.innerText = `Details for ${disasterType}`;
+
+                        // Find duplicate barangays
+                        const barangayCount = {};
+                        details.forEach(detail => {
+                            if (barangayCount[detail.barangay]) {
+                                barangayCount[detail.barangay]++;
+                            } else {
+                                barangayCount[detail.barangay] = 1;
+                            }
+                        });
+
+                        // Get list of barangays that appear more than once
+                        const duplicateBarangays = Object.keys(barangayCount).filter(barangay => barangayCount[barangay] > 1);
+
+                        // Display duplicate barangays in suggestion box
+                        if (duplicateBarangays.length > 0) {
+                            suggestionBox2.innerHTML = `Focus on this Barangay: ${duplicateBarangays.join(', ')}`;
+                            document.getElementById('suggest').classList.add('flex');
+                            document.getElementById('suggest').classList.remove('hidden');
+                        }
+
+                        // Populate table rows
+                        tableBody.innerHTML = details.map(detail => `
+                        <tr class="even:bg-gray-50 odd:bg-white hover:bg-gray-200">
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.rescue_team}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.barangay}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.affected_infrastructure}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${detail.casualties}</td>
+                        </tr>
+                    `).join('');
+
+                        // Show the table
+                        // disasterDetails.classList.remove('hidden');
+
+                        // Scroll to the details
+                        disasterDetails.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
 
 
                     // Modify the onClick in both chart render functions
@@ -314,7 +387,8 @@
                                     if (item.length > 0) {
                                         const index = item[0].index;
                                         const disasterType = labels[index];
-                                        loadDisasterDetails(disasterType); // Load details for the clicked type
+                                        loadDisasterDetails(disasterType, 1); // Load details for the clicked type
+                                        loadDisasterDetails2(disasterType);
                                     }
                                 }
                             }
@@ -350,7 +424,8 @@
                                     if (item.length > 0) {
                                         const index = item[0].index;
                                         const disasterType = rankingLabels[index];
-                                        loadDisasterDetails(disasterType); // Load details for the clicked type
+                                        loadDisasterDetails(disasterType, 1); // Load details for the clicked type
+                                        loadDisasterDetails2(disasterType);
                                     }
                                 }
                             }
@@ -374,6 +449,9 @@
             const searchTerm = document.getElementById('searchBar').value.toLowerCase();
 
             // Get all the rows in the table body
+            const tableBody2 = document.getElementById('disasterTableBodyNonPaginated');
+            const rows2 = tableBody2.getElementsByTagName('tr');
+
             const tableBody = document.getElementById('disasterTableBody');
             const rows = tableBody.getElementsByTagName('tr');
 
@@ -392,114 +470,102 @@
                     row.style.display = 'none'; // Hide row
                 }
             }
+
+
+            for (let row of rows2) {
+                // Get all cells in the current row
+                const cells = row.getElementsByTagName('td');
+
+                // Combine the text content of all cells for search comparison
+                const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+
+                // Check if the row text contains the search term
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = ''; // Show row
+                } else {
+                    row.style.display = 'none'; // Hide row
+                }
+            }
         }
 
 
-        function printBarangayCases(selectedCalamity) {
-            // Fetch unpaginated disaster details from the server
-            fetch(`/get-disaster-details/${selectedCalamity}?unpaginated=true`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.detailsPrint) {
-                        // Create the table rows dynamically from the unpaginated data
-                        const tableRows = data.detailsPrint.map(detail => `
-                            <tr>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.date}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.rescue_team}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.barangay}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.affected_infrastructure}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${detail.casualties}</td>
-                            </tr>
-                        `).join('');
+        function printBarangayCases() {
+            // Get the table's HTML
+            const title = document.querySelector('#disasterTitleNonPaginated').parentElement.outerHTML;
+            const table = document.querySelector('#disasterTableBodyNonPaginated').parentElement.outerHTML;
 
-                        // Create the new window for printing
-                        const printWindow = window.open('', '', 'height=600,width=800');
+            // Create a new window
+            const printWindow = window.open('', '', 'height=600,width=800');
 
-                        // Write the necessary HTML to the new window
-                        printWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>Print Barangay Cases</title>
-                            <style>
-                                body {
-                                    font-family: Arial, sans-serif;
-                                    margin: 20px;
-                                }
-                                table {
-                                    width: 100%;
-                                    border-collapse: collapse;
-                                    margin-top: 20px;
-                                }
-                                th, td {
-                                    border: 1px solid #ddd;
-                                    padding: 8px;
-                                    text-align: left;
-                                }
-                                th {
-                                    background-color: #f2f2f2;
-                                }
-                                .header {
-                                    text-align: center;
-                                    margin-bottom: 20px;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                }
-                                .header img {
-                                    width: 100px;
-                                    max-width: 100px;
-                                    height: auto;
-                                }
-                                .header p {
-                                    margin: 0;
-                                    line-height: 1.4;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="header">
-                                <img src="{{ asset('images/escaLogo.jpg') }}" alt="Esca Logo">
-                                <div class="mx-4">
-                                    <p class="font-bold">
-                                        REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
-                                    </p>
-                                    <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
-                                    <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
-                                    <p class="text-red-600">09152627121 | 09089376724</p>
-                                </div>
-                                <img src="{{ asset('images/logo.png') }}" alt="Logo">
-                            </div>
-                            <h2>Details for ${selectedCalamity}</h2>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Rescue Team</th>
-                                        <th>Barangay</th>
-                                        <th>Affected Infrastructure</th>
-                                        <th>Casualties</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${tableRows}
-                                </tbody>
-                            </table>
-                        </body>
-                    </html>
-                `);
-
-                        // Close the document and trigger print
-                        printWindow.document.close();
-                        printWindow.onload = function() {
-                            printWindow.focus();
-                            printWindow.print();
-                            printWindow.close();
-                        };
-                    } else {
-                        console.error('No unpaginated details found');
+            // Write the necessary HTML to the new window
+            printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print Barangay Cases</title>
+                <style>
+                    /* Add any styles you want for the printed page */
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
                     }
-                })
-                .catch(error => console.error('Error fetching unpaginated disaster details:', error));
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .header img {
+                        width: 100px;
+                        max-width: 100px;
+                        height: auto;
+                    }
+                    .header p {
+                        margin: 0;
+                        line-height: 1.4;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="{{ asset('images/escaLogo.jpg') }}" alt="Esca Logo">
+                    <div class="mx-4">
+                        <p class="font-bold">
+                            REPUBLIC OF THE PHILIPPINES<br>PROVINCE OF NEGROS OCCIDENTAL<br> ESCALANTE CITY
+                        </p>
+                        <p class="text-blue-900 font-bold">Disaster Risk Reduction & Management Office</p>
+                        <p class="text-blue-900 font-bold">Gomez Street, Brgy. Balintawak, Escalante City, Neg. Occ.</p>
+                        <p class="text-red-600">09152627121 | 09089376724</p>
+                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo">
+                </div>
+                <h2>${title}</h2>
+                ${table}
+            </body>
+        </html>
+    `);
+
+            // Close the document to ensure all resources are loaded
+            printWindow.document.close();
+
+            // Wait for the content to load before printing
+            printWindow.onload = function() {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            };
         }
 
 

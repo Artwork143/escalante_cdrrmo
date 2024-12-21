@@ -303,16 +303,38 @@ class DisasterController extends Controller
             })
             ->paginate($perPage, ['*'], 'page', $page);
 
+            return response()->json($details);
+    }
+
+    public function getDisasterDetails2($disasterType, Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $page = $request->input('page', 1); // Default to the first page
+        $search = $request->input('search'); // Search query
+
+        $barangayCount = Disaster:: // Load related vehicles
+        where('type', $disasterType)
+        ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('date', [$startDate, $endDate]);
+        })
+        ->where('is_approved', 1)->count();
+
+        // Fetch paginated disaster details
         $detailsPrint = Disaster::where('type', $disasterType)
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date', [$startDate, $endDate]);
             })
-            ->get();
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('rescue_team', 'like', '%' . $search . '%')
+                        ->orWhere('barangay', 'like', '%' . $search . '%')
+                        ->orWhere('affected_infrastructure', 'like', '%' . $search . '%');
+                });
+            })
+            ->paginate($barangayCount, ['*'], 'page', $page);
 
-            return response()->json([
-                'details' => $details,
-                'detailsPrint' => $detailsPrint,
-            ]);
+            return response()->json($detailsPrint);
     }
 
 

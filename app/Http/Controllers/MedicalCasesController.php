@@ -332,16 +332,39 @@ class MedicalCasesController extends Controller
             ->where('is_approved', 1)
             ->paginate($perPage, ['*'], 'page', $page);
 
+        return response()->json($barangayDetails);
+    }
+
+    public function getBarangayDetails2($barangay, Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $page = $request->input('page', 1); // Default to the first page
+        $search = $request->input('search'); // Search query
+
+        $barangayCount = MedicalCase:: // Load related vehicles
+        where('barangay', $barangay)
+        ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('date', [$startDate, $endDate]);
+        })
+        ->where('is_approved', 1)->count();
+
+        // Fetch paginated cases for the given barangay, month, and year
         $detailsPrint = MedicalCase::where('barangay', $barangay)
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date', [$startDate, $endDate]);
             })
-            ->get();
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('rescue_team', 'like', '%' . $search . '%')
+                        ->orWhere('place_of_incident', 'like', '%' . $search . '%')
+                        ->orWhere('chief_complaints', 'like', '%' . $search . '%');
+                });
+            })
+            ->where('is_approved', 1)
+            ->paginate($barangayCount, ['*'], 'page', $page);
 
-        return response()->json([
-            'barangayDetails' => $barangayDetails,
-            'detailsPrint' => $detailsPrint,
-        ]);
+        return response()->json($detailsPrint);
     }
 
 

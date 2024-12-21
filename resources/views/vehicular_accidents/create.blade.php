@@ -196,14 +196,18 @@
         function toggleVehicleInput(vehicle) {
             const vehicleInput = document.getElementById(vehicle + '_input');
             const vehicleCheckbox = document.getElementById('vehicle_' + vehicle);
+            const vehicleType = document.getElementById(vehicle + '_type');
 
             // Toggle visibility of the input field based on checkbox state
             if (vehicleCheckbox.checked) {
                 vehicleInput.classList.remove('hidden');
+                vehicleType.setAttribute('required', 'required'); // Make the input required
             } else {
                 vehicleInput.classList.add('hidden');
+                vehicleType.removeAttribute('required'); // Remove the required attribute
             }
         }
+
 
         document.addEventListener('DOMContentLoaded', function() {
             const causeOfIncidentSelect = document.getElementById('cause_of_incident');
